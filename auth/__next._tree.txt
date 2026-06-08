@@ -1,3 +1,3 @@
 :HL["/scriptorium/_next/static/css/3b8703c38198dd4a.css","style"]
 :HL["/scriptorium/_next/static/css/721da8333878557e.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"auth","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"ptitmhKHQ9PN9oThCIVUY"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"auth","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"GeBPUqikOHbinE1UePBf9"}
