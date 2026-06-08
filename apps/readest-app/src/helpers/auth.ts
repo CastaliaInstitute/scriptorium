@@ -33,6 +33,12 @@ export function handleAuthCallback({
       return;
     }
 
+    if (!supabase) {
+      console.error('Supabase is not configured for this Scriptorium build.');
+      navigate('/auth/error');
+      return;
+    }
+
     const { error: err } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,

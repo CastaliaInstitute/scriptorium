@@ -10,7 +10,7 @@ import { FaApple, FaGithub, FaDiscord } from 'react-icons/fa';
 import { IoArrowBack } from 'react-icons/io5';
 
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/utils/supabase';
+import { isSupabaseConfigured, supabase } from '@/utils/supabase';
 import { useEnv } from '@/context/EnvContext';
 import { useTheme } from '@/hooks/useTheme';
 import { useThemeStore } from '@/store/themeStore';
@@ -314,6 +314,10 @@ export default function AuthPage() {
   }, []);
 
   useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.access_token && session.user) {
         login(session.access_token, session.user);
@@ -340,6 +344,31 @@ export default function AuthPage() {
 
   if (!isMounted) {
     return null;
+  }
+
+  const unavailableAuth = (
+    <div className='text-base-content mx-auto flex max-w-sm flex-col gap-4 px-6 py-16'>
+      <button
+        aria-label={_('Go Back')}
+        onClick={handleGoBack}
+        className='btn btn-ghost h-8 min-h-8 w-8 p-0'
+      >
+        <IoArrowBack className='text-base-content' />
+      </button>
+      <div>
+        <h1 className='text-2xl font-semibold'>Castalia sign in</h1>
+        <p className='text-base-content/70 mt-3 text-sm leading-6'>
+          Castalia account registration is not connected for this build.
+        </p>
+      </div>
+      <button onClick={handleGoBack} className='btn btn-primary'>
+        Return to Scriptorium
+      </button>
+    </div>
+  );
+
+  if (!isSupabaseConfigured || !supabase) {
+    return unavailableAuth;
   }
 
   // For tauri app development, use a custom OAuth server to handle the OAuth callback

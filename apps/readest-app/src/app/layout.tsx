@@ -7,38 +7,36 @@ import Providers from '@/components/Providers';
 
 import '../styles/globals.css';
 
-const url = 'https://web.readest.com/';
-const title = 'Readest — Where You Read, Digest and Get Insight';
+const pagesBasePath = process.env['GITHUB_PAGES_BASE_PATH'] ?? '';
+const url = 'https://castaliainstitute.github.io/scriptorium/';
+const title = 'Castalia Scriptorium';
 const description =
-  'Discover Readest, the ultimate online ebook reader for immersive and organized reading. ' +
-  'Enjoy seamless access to your digital library, powerful tools for highlighting, bookmarking, ' +
-  'and note-taking, and support for multiple book views. ' +
-  'Perfect for deep reading, analysis, and understanding. Explore now!';
-const previewImage = 'https://cdn.readest.com/images/open_graph_preview_read_now.png';
+  'Castalia Scriptorium is a bookmaking environment for reading, annotation, review, and publication.';
+const previewImage = `${url}icon.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(url),
   title: {
     default: title,
-    template: '%s | Readest',
+    template: '%s | Scriptorium',
   },
   description,
   generator: 'Next.js',
-  manifest: '/manifest.json',
-  keywords: ['epub', 'pdf', 'ebook', 'reader', 'readest', 'pwa'],
+  manifest: `${pagesBasePath}/manifest.json`,
+  keywords: ['epub', 'pdf', 'ebook', 'reader', 'scriptorium', 'castalia', 'pwa'],
   authors: [
     {
-      name: 'readest',
-      url: 'https://github.com/readest/readest',
+      name: 'Castalia Institute',
+      url: 'https://github.com/CastaliaInstitute/scriptorium',
     },
   ],
   icons: {
-    icon: [{ url: '/icon.png' }, { url: '/favicon.ico' }],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+    icon: [{ url: `${pagesBasePath}/icon.png` }, { url: `${pagesBasePath}/favicon.ico` }],
+    apple: [{ url: `${pagesBasePath}/apple-touch-icon.png`, sizes: '180x180' }],
   },
   appleWebApp: {
     capable: true,
-    title: 'Readest',
+    title: 'Scriptorium',
     statusBarStyle: 'default',
   },
   openGraph: {
@@ -56,7 +54,7 @@ export const metadata: Metadata = {
   },
   other: {
     'apple-mobile-web-app-capable': 'yes',
-    'twitter:domain': 'web.readest.com',
+    'twitter:domain': 'castaliainstitute.github.io',
     'twitter:url': url,
   },
 };

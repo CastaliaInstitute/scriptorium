@@ -103,6 +103,11 @@ describe('notebookStore', () => {
       expect(useNotebookStore.getState().notebookActiveTab).toBe('notes');
     });
 
+    test('sets active tab to codex', () => {
+      useNotebookStore.getState().setNotebookActiveTab('codex');
+      expect(useNotebookStore.getState().notebookActiveTab).toBe('codex');
+    });
+
     test('defaults to notes', () => {
       expect(useNotebookStore.getState().notebookActiveTab).toBe('notes');
     });

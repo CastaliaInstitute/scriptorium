@@ -4,17 +4,21 @@ import { getRuntimeConfig } from '@/services/runtimeConfig';
 const supabaseUrl =
   getRuntimeConfig()?.supabaseUrl ||
   process.env['SUPABASE_URL'] ||
-  process.env['NEXT_PUBLIC_SUPABASE_URL'] ||
-  atob(process.env['NEXT_PUBLIC_DEFAULT_SUPABASE_URL_BASE64']!);
+  process.env['NEXT_PUBLIC_SUPABASE_URL'];
 const supabaseAnonKey =
   getRuntimeConfig()?.supabaseAnonKey ||
   process.env['SUPABASE_ANON_KEY'] ||
-  process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] ||
-  atob(process.env['NEXT_PUBLIC_DEFAULT_SUPABASE_KEY_BASE64']!);
+  process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+export const supabase =
+  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 export const createSupabaseClient = (accessToken?: string) => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase is not configured for this Scriptorium build.');
+  }
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
       headers: accessToken
@@ -27,6 +31,9 @@ export const createSupabaseClient = (accessToken?: string) => {
 };
 
 export const createSupabaseAdminClient = () => {
+  if (!supabaseUrl) {
+    throw new Error('Supabase is not configured for this Scriptorium build.');
+  }
   const supabaseAdminKey = process.env['SUPABASE_ADMIN_KEY'] || '';
   return createClient(supabaseUrl, supabaseAdminKey, {
     auth: {

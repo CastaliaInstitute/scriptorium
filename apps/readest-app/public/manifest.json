@@ -1,23 +1,23 @@
 {
-  "name": "Readest",
-  "short_name": "Readest",
-  "start_url": "/",
+  "name": "Castalia Scriptorium",
+  "short_name": "Scriptorium",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
-  "description": "Readest is an open-source eBook reader supporting EPUB, PDF, and sync across devices.",
+  "description": "Castalia Scriptorium is a bookmaking environment for reading, annotation, review, and publication.",
   "icons": [
     {
-      "src": "/icon.png",
+      "src": "icon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/icon.png",
+      "src": "icon.png",
       "type": "image/png",
       "sizes": "256x256"
     },
     {
-      "src": "/icon.png",
+      "src": "icon.png",
       "type": "image/png",
       "sizes": "512x512"
     }

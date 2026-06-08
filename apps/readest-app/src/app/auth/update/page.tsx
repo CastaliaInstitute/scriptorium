@@ -30,6 +30,11 @@ export default function UpdateEmailPage() {
     setError('');
 
     try {
+      if (!supabase) {
+        throw new Error(
+          'Castalia account registration is not connected for this public preview build.',
+        );
+      }
       const { error: updateError } = await supabase.auth.updateUser({
         email: email,
       });

@@ -7,13 +7,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const isDev = process.env['NODE_ENV'] === 'development';
 const appPlatform = process.env['NEXT_PUBLIC_APP_PLATFORM'];
+const isStaticPages = appPlatform === 'pages-static';
+const staticPagesBasePath = isStaticPages ? (process.env['GITHUB_PAGES_BASE_PATH'] ?? '') : '';
 
 if (isDev) {
   const { initOpenNextCloudflareForDev } = await import('@opennextjs/cloudflare');
   initOpenNextCloudflareForDev();
 }
 
-const exportOutput = appPlatform !== 'web' && !isDev;
+const exportOutput = (isStaticPages || appPlatform !== 'web') && !isDev;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -35,7 +37,8 @@ const nextConfig = {
     turbopackFileSystemCacheForBuild: true,
   },
   // Configure assetPrefix or else the server won't properly resolve your assets.
-  assetPrefix: '',
+  assetPrefix: staticPagesBasePath,
+  basePath: staticPagesBasePath,
   reactStrictMode: true,
   serverExternalPackages: ['isows'],
   allowedDevOrigins: ['192.168.2.120'],
@@ -123,7 +126,7 @@ const nextConfig = {
   },
 };
 
-const pwaDisabled = isDev || appPlatform !== 'web';
+const pwaDisabled = isDev || (appPlatform !== 'web' && !isStaticPages);
 
 const withPWA = pwaDisabled
   ? (config) => config

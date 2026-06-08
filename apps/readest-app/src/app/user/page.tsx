@@ -44,6 +44,7 @@ import SharedLinksSection from './components/SharedLinksSection';
 import { SyncPassphraseSection } from './components/SyncPassphraseSection';
 import { SyncCategoriesSection } from './components/SyncCategoriesSection';
 import Checkout from './components/Checkout';
+import CastaliaRepositorySection from './components/CastaliaRepositorySection';
 
 type CheckoutState = {
   clientSecret: string;
@@ -310,6 +311,9 @@ const ProfilePage = () => {
                     userEmail={userEmail}
                     planDetails={userPlanDetails}
                   />
+                  {!showStorageManager && !showSharedLinksManager && !showSyncManager && (
+                    <CastaliaRepositorySection />
+                  )}
 
                   {!showStorageManager && !showSharedLinksManager && !showSyncManager && (
                     <UsageStats quotas={quotas} />

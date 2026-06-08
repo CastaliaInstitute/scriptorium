@@ -105,6 +105,9 @@ export const getAccessToken = async (): Promise<string | null> => {
   if (isWebAppPlatform()) {
     return localStorage.getItem('token') ?? null;
   }
+  if (!supabase) {
+    return null;
+  }
   const { data } = await supabase.auth.getSession();
   return data?.session?.access_token ?? null;
 };
@@ -114,12 +117,16 @@ export const getUserID = async (): Promise<string | null> => {
     const user = localStorage.getItem('user') ?? '{}';
     return JSON.parse(user).id ?? null;
   }
+  if (!supabase) {
+    return null;
+  }
   const { data } = await supabase.auth.getSession();
   return data?.session?.user?.id ?? null;
 };
 
 export const validateUserAndToken = async (authHeader: string | null | undefined) => {
   if (!authHeader) return {};
+  if (!supabase) return {};
 
   const token = authHeader.replace('Bearer ', '');
   const {

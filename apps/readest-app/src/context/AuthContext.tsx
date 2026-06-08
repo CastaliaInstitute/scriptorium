@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabase';
+import { castaliaClient } from '@/services/castalia/client';
 import posthog from 'posthog-js';
 
 interface AuthContextType {
@@ -39,6 +40,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+    const supabaseClient = supabase;
+
     const syncSession = (
       session: { access_token: string; refresh_token: string; user: User } | null,
     ) => {
@@ -49,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('refresh_token', refresh_token);
         localStorage.setItem('user', JSON.stringify(user));
         posthog.identify(user.id);
+        void castaliaClient.ensureRegistered(user, access_token);
         setToken(access_token);
         setUser(user);
       } else {
@@ -61,13 +68,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     const refreshSession = async () => {
       try {
-        await supabase.auth.refreshSession();
+        await supabaseClient.auth.refreshSession();
       } catch {
         syncSession(null);
       }
     };
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: subscription } = supabaseClient.auth.onAuthStateChange((_, session) => {
       syncSession(session);
     });
 
@@ -88,15 +95,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(newUser);
     localStorage.setItem('token', newToken);
     localStorage.setItem('user', JSON.stringify(newUser));
+    void castaliaClient.ensureRegistered(newUser, newToken);
   }, []);
 
   const logout = useCallback(async () => {
     console.log('Logging out');
     try {
-      await supabase.auth.refreshSession();
+      await supabase?.auth.refreshSession();
     } catch {
     } finally {
-      await supabase.auth.signOut();
+      await supabase?.auth.signOut();
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setToken(null);
@@ -106,7 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refresh = useCallback(async () => {
     try {
-      await supabase.auth.refreshSession();
+      await supabase?.auth.refreshSession();
     } catch {}
   }, []);
 

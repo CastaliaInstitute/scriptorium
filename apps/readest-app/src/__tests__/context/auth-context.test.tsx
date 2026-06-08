@@ -17,7 +17,14 @@ vi.mock('posthog-js', () => ({
   default: { identify: vi.fn() },
 }));
 
+vi.mock('@/services/castalia/client', () => ({
+  castaliaClient: {
+    ensureRegistered: vi.fn().mockResolvedValue(null),
+  },
+}));
+
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { castaliaClient } from '@/services/castalia/client';
 
 describe('AuthContext memoization', () => {
   beforeEach(() => {
@@ -98,5 +105,32 @@ describe('AuthContext memoization', () => {
     expect(last.login).toBe(prev.login);
     expect(last.logout).toBe(prev.logout);
     expect(last.refresh).toBe(prev.refresh);
+  });
+
+  test('login ensures Castalia registration', () => {
+    let authValue: ReturnType<typeof useAuth> | null = null;
+
+    function Probe() {
+      authValue = useAuth();
+      return null;
+    }
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    const user = {
+      id: 'user-1',
+      email: 'reader@example.com',
+      user_metadata: {},
+    };
+
+    act(() => {
+      authValue!.login('token-1', user as Parameters<ReturnType<typeof useAuth>['login']>[1]);
+    });
+
+    expect(castaliaClient.ensureRegistered).toHaveBeenCalledWith(user, 'token-1');
   });
 });

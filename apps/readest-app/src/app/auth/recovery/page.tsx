@@ -30,6 +30,10 @@ export default function ResetPasswordPage() {
   };
 
   useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+
     const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.access_token && session.user && event === 'USER_UPDATED') {
         login(session.access_token, session.user);
@@ -43,6 +47,22 @@ export default function ResetPasswordPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
+
+  if (!supabase) {
+    return (
+      <div className='flex min-h-screen items-center justify-center'>
+        <div className='text-base-content w-full max-w-md p-8'>
+          <h1 className='text-2xl font-semibold'>Castalia sign in</h1>
+          <p className='text-base-content/70 mt-3 text-sm'>
+            Password recovery is not connected for this public preview build.
+          </p>
+          <button onClick={() => router.back()} className='btn btn-primary mt-6'>
+            {_('Back')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex min-h-screen items-center justify-center'>
