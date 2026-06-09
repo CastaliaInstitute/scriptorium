@@ -88,6 +88,7 @@ import ImportFromFolderDialog, {
   ImportFromFolderResult,
 } from './components/ImportFromFolderDialog';
 import ImportFromUrlDialog from './components/ImportFromUrlDialog';
+import NewCodexDialog from './components/NewCodexDialog';
 import { convertToEpubWithWorker } from '@/services/send/conversion/conversionWorker';
 import { getClipOptions } from '@/services/send/clipOptions';
 import { invoke } from '@tauri-apps/api/core';
@@ -179,6 +180,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
     searchParams?.get('opds') === 'true',
   );
   const [showImportFromUrl, setShowImportFromUrl] = useState(false);
+  const [showNewCodex, setShowNewCodex] = useState(false);
   const [loading, setLoading] = useState(false);
   // Seed from the library store: if we already have books in memory (the
   // common reader → library return path), treat the page as loaded
@@ -681,6 +683,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
     const lookupIndex = buildBookLookupIndex(library);
     const failedImports: Array<{ filename: string; errorMessage: string }> = [];
     const successfulImports: string[] = [];
+    const successfulImportIds: string[] = [];
 
     // Readest's own Books/ prefix is resolved once at app init and persisted
     // in `settings.localBooksDir`. We hand it to `ingestFile` so the in-place
@@ -735,6 +738,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
         );
         if (!book) return null;
         successfulImports.push(book.title);
+        successfulImportIds.push(book.hash);
         return book;
       } catch (error) {
         const filename = typeof file === 'string' ? file : file.name;
@@ -789,6 +793,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
     }
 
     setLoading(false);
+    return successfulImportIds;
   };
 
   const updateBookTransferProgress = throttle((bookHash: string, progress: ProgressPayload) => {
@@ -956,6 +961,15 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
       const groupId = searchParams?.get('group') || '';
       importBooks(result.files, groupId);
     });
+  };
+
+  const handleCreateCodex = async (file: File) => {
+    setIsSelectMode(false);
+    const groupId = searchParams?.get('group') || '';
+    const importedBookIds = await importBooks([{ file }], groupId);
+    if (importedBookIds.length > 0) {
+      setPendingNavigationBookIds([importedBookIds[0]!]);
+    }
   };
 
   const handleImportBookFromUrl = async (url: string) => {
@@ -1350,6 +1364,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
           isSelectAll={isSelectAll}
           onPullLibrary={pullLibrary}
           onImportBooksFromFiles={handleImportBooksFromFiles}
+          onCreateCodex={() => setShowNewCodex(true)}
           onImportBooksFromDirectory={
             appService?.canReadExternalDir ? handleImportBooksFromDirectory : undefined
           }
@@ -1533,6 +1548,11 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
         isOpen={showImportFromUrl}
         onClose={() => setShowImportFromUrl(false)}
         onSubmit={handleImportBookFromUrl}
+      />
+      <NewCodexDialog
+        isOpen={showNewCodex}
+        onClose={() => setShowNewCodex(false)}
+        onCreate={handleCreateCodex}
       />
       <Toast />
     </div>

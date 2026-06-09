@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { BookOpen } from 'lucide-react';
 import { MdLink, MdRssFeed } from 'react-icons/md';
 import { IoFileTray } from 'react-icons/io5';
 import { useEnv } from '@/context/EnvContext';
@@ -9,6 +10,7 @@ import Menu from '@/components/Menu';
 interface ImportMenuProps {
   setIsDropdownOpen?: (open: boolean) => void;
   onImportBooksFromFiles: () => void;
+  onCreateCodex?: () => void;
   onImportBooksFromDirectory?: () => void;
   onImportBookFromUrl?: () => void;
   onOpenCatalogManager: () => void;
@@ -17,6 +19,7 @@ interface ImportMenuProps {
 const ImportMenu: React.FC<ImportMenuProps> = ({
   setIsDropdownOpen,
   onImportBooksFromFiles,
+  onCreateCodex,
   onImportBooksFromDirectory,
   onImportBookFromUrl,
   onOpenCatalogManager,
@@ -26,6 +29,11 @@ const ImportMenu: React.FC<ImportMenuProps> = ({
 
   const handleImportFromFiles = () => {
     onImportBooksFromFiles();
+    setIsDropdownOpen?.(false);
+  };
+
+  const handleCreateCodex = () => {
+    onCreateCodex?.();
     setIsDropdownOpen?.(false);
   };
 
@@ -49,6 +57,13 @@ const ImportMenu: React.FC<ImportMenuProps> = ({
       className={clsx('dropdown-content bg-base-100 rounded-box !relative z-[1] mt-3 p-2 shadow')}
       onCancel={() => setIsDropdownOpen?.(false)}
     >
+      {onCreateCodex && (
+        <MenuItem
+          label={_('New Codex')}
+          Icon={<BookOpen className='h-5 w-5' />}
+          onClick={handleCreateCodex}
+        />
+      )}
       <MenuItem
         label={_('From Local File')}
         Icon={<IoFileTray className='h-5 w-5' />}
