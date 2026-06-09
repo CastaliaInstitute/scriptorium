@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Save,
   Server,
-  ShieldCheck,
   Upload,
   UploadCloud,
   UserPlus,
@@ -29,10 +28,6 @@ import {
   parseCastaliaRepositoryArtifact,
   serializeCastaliaRepositoryArtifact,
 } from '@/services/castalia/repositoryArtifact';
-import {
-  hasGitHubRepositoryToken,
-  saveGitHubRepositoryToken,
-} from '@/services/castalia/githubRepository';
 import { createCastaliaRepositorySnapshotZip } from '@/services/castalia/repositorySnapshot';
 import { uniqueId } from '@/utils/misc';
 
@@ -76,7 +71,6 @@ const CastaliaRepositorySection = () => {
   const [repositoryName, setRepositoryName] = useState('');
   const [repositoryUrl, setRepositoryUrl] = useState('');
   const [repositoryBranch, setRepositoryBranch] = useState('');
-  const [githubToken, setGithubToken] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [apiStatus, setApiStatus] = useState<CastaliaApiStatus | null>(null);
@@ -172,15 +166,11 @@ const CastaliaRepositorySection = () => {
         repository = (await castaliaClient.saveRemoteRepository(token, repository)) ?? repository;
       }
       const state = castaliaClient.saveRepository(repository);
-      if (repository.provider === 'git') {
-        saveGitHubRepositoryToken(repository.id, githubToken);
-      }
       setState(state);
       setDraftStats(getDraftStats(state.activeRepositoryId));
       setRepositoryName('');
       setRepositoryUrl('');
       setRepositoryBranch('');
-      setGithubToken('');
       setMessage(_('Repository access saved'));
     } catch (error) {
       console.error('Castalia repository save failed:', error);
@@ -193,13 +183,6 @@ const CastaliaRepositorySection = () => {
   const handleSelectRepository = (repositoryId: string) => {
     setState(castaliaClient.setActiveRepository(repositoryId));
     setDraftStats(getDraftStats(repositoryId));
-  };
-
-  const handleSaveActiveRepositoryToken = () => {
-    if (!activeRepository || activeRepository.provider !== 'git') return;
-    saveGitHubRepositoryToken(activeRepository.id, githubToken);
-    setGithubToken('');
-    setMessage(_('GitHub token saved'));
   };
 
   const updatePushedDrafts = (drafts: CodexDraft[]) => {
@@ -453,9 +436,6 @@ const CastaliaRepositorySection = () => {
               >
                 <GitBranch className='h-4 w-4 flex-none' aria-hidden='true' />
                 <span className='min-w-0 flex-1 truncate'>{repository.name}</span>
-                {repository.provider === 'git' && hasGitHubRepositoryToken(repository.id) && (
-                  <ShieldCheck className='text-success h-4 w-4 flex-none' aria-hidden='true' />
-                )}
                 {state.activeRepositoryId === repository.id && (
                   <span className='text-success text-xs'>{_('Active')}</span>
                 )}
@@ -488,36 +468,13 @@ const CastaliaRepositorySection = () => {
             <Save className='h-4 w-4' aria-hidden='true' />
           </button>
         </div>
-        <div className='mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]'>
+        <div className='mt-2 grid gap-2'>
           <input
             className='input input-bordered input-sm min-w-0'
             value={repositoryBranch}
             onChange={(event) => setRepositoryBranch(event.target.value)}
             placeholder={_('Branch')}
           />
-          <input
-            className='input input-bordered input-sm min-w-0'
-            type='password'
-            value={githubToken}
-            onChange={(event) => setGithubToken(event.target.value)}
-            placeholder={_('GitHub token')}
-            autoComplete='off'
-          />
-          <button
-            type='button'
-            className='btn btn-sm'
-            onClick={handleSaveActiveRepositoryToken}
-            disabled={
-              isLoading ||
-              !activeRepository ||
-              activeRepository.provider !== 'git' ||
-              !githubToken.trim()
-            }
-            title={_('Save GitHub token')}
-            aria-label={_('Save GitHub token')}
-          >
-            <ShieldCheck className='h-4 w-4' aria-hidden='true' />
-          </button>
         </div>
       </div>
 

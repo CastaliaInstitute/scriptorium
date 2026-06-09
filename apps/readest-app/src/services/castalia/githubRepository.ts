@@ -1,27 +1,9 @@
 import type { Book } from '@/types/book';
+import { getRuntimeConfig } from '@/services/runtimeConfig';
 import type { CastaliaRepository } from './client';
-import {
-  CASTALIA_CROSSBOOK_LINKS_SCHEMA,
-  CASTALIA_CROSSPOINT_CATALOG_SCHEMA,
-  CROSSPOINT_CATALOG_PATH,
-  CROSSPOINT_LINKS_PATH,
-  CROSSPOINT_OPDS_PATH,
-  createCrossBookLinkManifest,
-  createCrossPointPublication,
-  mergeCrossPointCatalogPublication,
-  serializeCrossBookLinkManifest,
-  serializeCrossPointCatalog,
-  serializeCrossPointOpdsCatalog,
-} from './crosspointCatalog';
-import type {
-  CrossBookLink,
-  CrossBookLinkManifest,
-  CrossPointCatalog,
-  CrossPointPublication,
-} from './crosspointCatalog';
+import type { CrossBookLink } from './crosspointCatalog';
 
-const TOKEN_STORAGE_PREFIX = 'castalia:github-token:v1:';
-const GITHUB_API_BASE_URL = 'https://api.github.com';
+const CASTALIA_GITHUB_FUNCTION = 'castalia-github-repository';
 
 export interface GitHubRepositoryTarget {
   owner: string;
@@ -35,43 +17,6 @@ export interface PublishCodexToGitHubInput {
   file: File;
   crossBookLinks?: CrossBookLink[];
 }
-
-interface GitHubContentResponse {
-  sha?: string;
-  content?: string;
-  encoding?: string;
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
-
-const asString = (value: unknown) => (typeof value === 'string' ? value : undefined);
-
-const asStringArray = (value: unknown) =>
-  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
-
-const parseCrossPointPublication = (value: unknown): CrossPointPublication | null => {
-  if (!isRecord(value)) return null;
-  const bookHash = asString(value['bookHash']);
-  const href = asString(value['href']);
-  const id = asString(value['id']);
-  const title = asString(value['title']);
-  if (!bookHash || !href || !id || !title) return null;
-  return {
-    id,
-    bookHash,
-    title,
-    authors: asStringArray(value['authors']),
-    format: asString(value['format']) ?? 'EPUB',
-    mediaType: asString(value['mediaType']) ?? 'application/epub+zip',
-    size: typeof value['size'] === 'number' ? value['size'] : 0,
-    fileName: asString(value['fileName']) ?? `${bookHash}.epub`,
-    href,
-    metadataHref: asString(value['metadataHref']) ?? '',
-    linksHref: asString(value['linksHref']) ?? '',
-    updatedAt: asString(value['updatedAt']) ?? new Date().toISOString(),
-  };
-};
 
 const normalizeRepoUrl = (value: string) => value.trim().replace(/\.git$/i, '');
 
@@ -100,30 +45,19 @@ export const parseGitHubRepositoryUrl = (value?: string): GitHubRepositoryTarget
   }
 };
 
-export const getGitHubRepositoryToken = (repositoryId: string) => {
-  if (typeof window === 'undefined') return '';
-  return window.localStorage.getItem(`${TOKEN_STORAGE_PREFIX}${repositoryId}`) ?? '';
+const getSupabaseUrl = () =>
+  getRuntimeConfig()?.supabaseUrl ||
+  process.env['SUPABASE_URL'] ||
+  process.env['NEXT_PUBLIC_SUPABASE_URL'];
+
+export const getCastaliaGitHubFunctionUrl = () => {
+  const supabaseUrl = getSupabaseUrl();
+  if (!supabaseUrl) return '';
+  return `${supabaseUrl.replace(/\/$/, '')}/functions/v1/${CASTALIA_GITHUB_FUNCTION}`;
 };
 
-export const saveGitHubRepositoryToken = (repositoryId: string, token: string) => {
-  if (typeof window === 'undefined') return;
-  const key = `${TOKEN_STORAGE_PREFIX}${repositoryId}`;
-  const trimmedToken = token.trim();
-  if (trimmedToken) {
-    window.localStorage.setItem(key, trimmedToken);
-  } else {
-    window.localStorage.removeItem(key);
-  }
-};
-
-export const hasGitHubRepositoryToken = (repositoryId: string) =>
-  Boolean(getGitHubRepositoryToken(repositoryId));
-
-const encodeBase64 = async (value: File | string) => {
-  const bytes =
-    typeof value === 'string'
-      ? new TextEncoder().encode(value)
-      : new Uint8Array(await value.arrayBuffer());
+const encodeBase64 = async (file: File) => {
+  const bytes = new Uint8Array(await file.arrayBuffer());
   let binary = '';
   const chunkSize = 0x8000;
   for (let i = 0; i < bytes.length; i += chunkSize) {
@@ -132,245 +66,14 @@ const encodeBase64 = async (value: File | string) => {
   return btoa(binary);
 };
 
-const decodeBase64Text = (value: string) => {
-  const binary = atob(value.replace(/\s/g, ''));
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-};
-
-const githubRequest = async <T>(path: string, token: string, init?: RequestInit): Promise<T> => {
-  const response = await fetch(`${GITHUB_API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${token}`,
-      'X-GitHub-Api-Version': '2022-11-28',
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`GitHub request failed: ${response.status}`);
-  }
-  return (await response.json()) as T;
-};
-
-const getExistingContentSha = async (
-  target: GitHubRepositoryTarget,
-  token: string,
-  path: string,
-  branch?: string,
-) => {
-  const query = branch ? `?ref=${encodeURIComponent(branch)}` : '';
-  try {
-    const content = await githubRequest<unknown>(
-      `/repos/${encodeURIComponent(target.owner)}/${encodeURIComponent(target.repo)}/contents/${path}${query}`,
-      token,
-    );
-    return isRecord(content) && typeof content['sha'] === 'string' ? content['sha'] : undefined;
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('404')) return undefined;
-    throw error;
-  }
-};
-
-const getRepositoryTextContent = async (
-  target: GitHubRepositoryTarget,
-  token: string,
-  path: string,
-  branch?: string,
-) => {
-  const query = branch ? `?ref=${encodeURIComponent(branch)}` : '';
-  try {
-    const content = await githubRequest<GitHubContentResponse>(
-      `/repos/${encodeURIComponent(target.owner)}/${encodeURIComponent(target.repo)}/contents/${path}${query}`,
-      token,
-    );
-    if (content.encoding !== 'base64' || typeof content.content !== 'string') return null;
-    return decodeBase64Text(content.content);
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('404')) return null;
-    throw error;
-  }
-};
-
-const parseCrossPointCatalog = (raw: string | null): CrossPointCatalog | null => {
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!isRecord(parsed) || parsed['schema'] !== CASTALIA_CROSSPOINT_CATALOG_SCHEMA) return null;
-    const publications = parsed['publications'];
-    if (!Array.isArray(publications)) return null;
-    const repository = parsed['repository'];
-    if (!isRecord(repository)) return null;
-    const repositoryId = asString(repository['id']);
-    const repositoryName = asString(repository['name']);
-    if (!repositoryId || !repositoryName) return null;
-    return {
-      schema: CASTALIA_CROSSPOINT_CATALOG_SCHEMA,
-      updatedAt: asString(parsed['updatedAt']) ?? new Date().toISOString(),
-      repository: {
-        id: repositoryId,
-        name: repositoryName,
-        url: asString(repository['url']),
-        branch: asString(repository['branch']),
-      },
-      publications: publications
-        .map(parseCrossPointPublication)
-        .filter((publication): publication is CrossPointPublication => publication !== null),
-    };
-  } catch {
-    return null;
-  }
-};
-
-const parseCrossBookLinkManifest = (
-  raw: string | null,
-  repository: CastaliaRepository,
-): CrossBookLinkManifest => {
-  if (!raw) return createCrossBookLinkManifest(repository, []);
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!isRecord(parsed) || parsed['schema'] !== CASTALIA_CROSSBOOK_LINKS_SCHEMA) {
-      return createCrossBookLinkManifest(repository, []);
-    }
-    const links = parsed['links'];
-    return createCrossBookLinkManifest(repository, Array.isArray(links) ? links : []);
-  } catch {
-    return createCrossBookLinkManifest(repository, []);
-  }
-};
-
-const putRepositoryContent = async (
-  target: GitHubRepositoryTarget,
-  token: string,
-  input: {
-    path: string;
-    content: File | string;
-    message: string;
-    branch?: string;
-  },
-) => {
-  const sha = await getExistingContentSha(target, token, input.path, input.branch);
-  const body = {
-    message: input.message,
-    content: await encodeBase64(input.content),
-    ...(input.branch ? { branch: input.branch } : {}),
-    ...(sha ? { sha } : {}),
-  };
-  return githubRequest<GitHubContentResponse>(
-    `/repos/${encodeURIComponent(target.owner)}/${encodeURIComponent(target.repo)}/contents/${input.path}`,
-    token,
-    {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    },
-  );
-};
-
-const createCodexMetadata = (
-  book: Book,
-  file: File,
-  repository: CastaliaRepository,
-  publishedAt: string,
-) =>
-  JSON.stringify(
-    {
-      schema: 'castalia.codex.github.v1',
-      bookHash: book.hash,
-      title: book.title,
-      author: book.author,
-      format: book.format,
-      fileName: file.name,
-      fileType: file.type,
-      fileSize: file.size,
-      repository: {
-        id: repository.id,
-        name: repository.name,
-        url: repository.url,
-        branch: repository.branch,
-      },
-      publishedAt,
-    },
-    null,
-    2,
-  );
-
-const encodeRawGitHubPath = (path: string) =>
-  path
-    .split('/')
-    .map((part) => encodeURIComponent(part))
-    .join('/');
-
-const getRawGitHubUrl = (target: GitHubRepositoryTarget, branch: string, path: string) =>
-  `https://raw.githubusercontent.com/${encodeURIComponent(target.owner)}/${encodeURIComponent(
-    target.repo,
-  )}/${encodeURIComponent(branch)}/${encodeRawGitHubPath(path)}`;
-
-const publishCrossPointArtifacts = async (
-  target: GitHubRepositoryTarget,
-  token: string,
-  input: {
-    repository: CastaliaRepository;
-    book: Book;
-    file: File;
-    branch?: string;
-    bookPath: string;
-    metadataPath: string;
-    publishedAt: string;
-    crossBookLinks?: CrossBookLink[];
-  },
-) => {
-  const rawBranch = input.branch ?? 'main';
-  const existingCatalog = parseCrossPointCatalog(
-    await getRepositoryTextContent(target, token, CROSSPOINT_CATALOG_PATH, input.branch),
-  );
-  const existingLinks = parseCrossBookLinkManifest(
-    await getRepositoryTextContent(target, token, CROSSPOINT_LINKS_PATH, input.branch),
-    input.repository,
-  );
-  const publication = createCrossPointPublication(input.book, input.file, {
-    bookHref: getRawGitHubUrl(target, rawBranch, input.bookPath),
-    metadataHref: getRawGitHubUrl(target, rawBranch, input.metadataPath),
-    linksHref: getRawGitHubUrl(target, rawBranch, CROSSPOINT_LINKS_PATH),
-    publishedAt: input.publishedAt,
-  });
-  const catalog = mergeCrossPointCatalogPublication(
-    existingCatalog,
-    input.repository,
-    publication,
-    input.publishedAt,
-  );
-  const mergedLinks = new Map(existingLinks.links.map((link) => [link.id, link]));
-  for (const link of input.crossBookLinks ?? []) {
-    mergedLinks.set(link.id, link);
-  }
-  const links = createCrossBookLinkManifest(
-    input.repository,
-    [...mergedLinks.values()],
-    input.publishedAt,
-  );
-
-  await putRepositoryContent(target, token, {
-    path: CROSSPOINT_CATALOG_PATH,
-    content: serializeCrossPointCatalog(catalog),
-    message: `Update CrossPoint catalog: ${input.repository.name}`,
-    branch: input.branch,
-  });
-  await putRepositoryContent(target, token, {
-    path: CROSSPOINT_OPDS_PATH,
-    content: serializeCrossPointOpdsCatalog(catalog),
-    message: `Update CrossPoint OPDS feed: ${input.repository.name}`,
-    branch: input.branch,
-  });
-  await putRepositoryContent(target, token, {
-    path: CROSSPOINT_LINKS_PATH,
-    content: serializeCrossBookLinkManifest(links),
-    message: `Update CrossPoint links: ${input.repository.name}`,
-    branch: input.branch,
-  });
-};
+const getBookPayload = (book: Book) => ({
+  hash: book.hash,
+  title: book.title,
+  author: book.author,
+  format: book.format,
+  createdAt: book.createdAt,
+  updatedAt: book.updatedAt,
+});
 
 export const publishCodexToGitHub = async ({
   repository,
@@ -379,36 +82,38 @@ export const publishCodexToGitHub = async ({
   file,
   crossBookLinks,
 }: PublishCodexToGitHubInput) => {
-  const target = parseGitHubRepositoryUrl(repository.url);
-  if (!target) {
+  if (!parseGitHubRepositoryUrl(repository.url)) {
     throw new Error('Repository URL is not a GitHub repository');
   }
 
-  const basePath = `codices/${book.hash}`;
-  const branch = repository.branch?.trim() || undefined;
-  const bookPath = `${basePath}/book.epub`;
-  const metadataPath = `${basePath}/metadata.json`;
-  const publishedAt = new Date().toISOString();
-  await putRepositoryContent(target, token, {
-    path: bookPath,
-    content: file,
-    message: `Add Codex EPUB: ${book.title}`,
-    branch,
+  const functionUrl = getCastaliaGitHubFunctionUrl();
+  if (!functionUrl) {
+    throw new Error('Castalia Supabase is not configured for GitHub repository access');
+  }
+
+  const response = await fetch(functionUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: 'publish-codex',
+      repository,
+      book: getBookPayload(book),
+      file: {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        contentBase64: await encodeBase64(file),
+      },
+      crossBookLinks: crossBookLinks ?? [],
+    }),
   });
-  await putRepositoryContent(target, token, {
-    path: metadataPath,
-    content: createCodexMetadata(book, file, repository, publishedAt),
-    message: `Add Codex metadata: ${book.title}`,
-    branch,
-  });
-  await publishCrossPointArtifacts(target, token, {
-    repository,
-    book,
-    file,
-    branch,
-    bookPath,
-    metadataPath,
-    publishedAt,
-    crossBookLinks,
-  });
+
+  if (!response.ok) {
+    throw new Error(`Castalia GitHub publish failed: ${response.status}`);
+  }
+
+  return (await response.json()) as unknown;
 };

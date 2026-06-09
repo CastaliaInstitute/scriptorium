@@ -2,11 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Book } from '@/types/book';
 import type { CastaliaRepository } from '@/services/castalia/client';
 import {
-  CROSSPOINT_CATALOG_PATH,
-  CROSSPOINT_LINKS_PATH,
-  CROSSPOINT_OPDS_PATH,
-} from '@/services/castalia/crosspointCatalog';
-import {
+  getCastaliaGitHubFunctionUrl,
   parseGitHubRepositoryUrl,
   publishCodexToGitHub,
 } from '@/services/castalia/githubRepository';
@@ -28,27 +24,17 @@ const repository: CastaliaRepository = {
   provider: 'git',
 };
 
-const decodePutContent = (call: [unknown, RequestInit | undefined]) => {
-  const body = JSON.parse(call[1]!.body as string) as Record<string, unknown>;
-  return new TextDecoder().decode(
-    Uint8Array.from(atob(String(body['content'])), (char) => char.charCodeAt(0)),
-  );
-};
-
 describe('githubRepository', () => {
   beforeEach(() => {
+    process.env['NEXT_PUBLIC_SUPABASE_URL'] = 'https://pilmscrodlitdrygabvo.supabase.co';
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (_url: string, init?: RequestInit) => {
-        if (init?.method === 'PUT') {
-          return new Response(JSON.stringify({ sha: 'new-sha' }), { status: 200 });
-        }
-        return new Response(JSON.stringify({ sha: 'old-sha' }), { status: 200 });
-      }),
+      vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })),
     );
   });
 
   afterEach(() => {
+    delete process.env['NEXT_PUBLIC_SUPABASE_URL'];
     vi.unstubAllGlobals();
   });
 
@@ -68,12 +54,18 @@ describe('githubRepository', () => {
     expect(parseGitHubRepositoryUrl('https://example.com/CastaliaInstitute/codices')).toBeNull();
   });
 
-  test('publishes EPUB and metadata through GitHub contents API', async () => {
+  test('resolves Castalia Supabase GitHub function URL', () => {
+    expect(getCastaliaGitHubFunctionUrl()).toBe(
+      'https://pilmscrodlitdrygabvo.supabase.co/functions/v1/castalia-github-repository',
+    );
+  });
+
+  test('publishes EPUB through Castalia Supabase GitHub function', async () => {
     const file = new File(['epub bytes'], 'my-codex.epub', { type: 'application/epub+zip' });
 
     await publishCodexToGitHub({
       repository,
-      token: 'github-token',
+      token: 'castalia-supabase-token',
       book,
       file,
       crossBookLinks: [
@@ -87,77 +79,36 @@ describe('githubRepository', () => {
     });
 
     const fetchMock = vi.mocked(fetch);
-    expect(fetchMock).toHaveBeenCalledTimes(12);
-    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
-      'https://api.github.com/repos/CastaliaInstitute/codices/contents/codices/bookhash/book.epub?ref=main',
-      'https://api.github.com/repos/CastaliaInstitute/codices/contents/codices/bookhash/book.epub',
-      'https://api.github.com/repos/CastaliaInstitute/codices/contents/codices/bookhash/metadata.json?ref=main',
-      'https://api.github.com/repos/CastaliaInstitute/codices/contents/codices/bookhash/metadata.json',
-      `https://api.github.com/repos/CastaliaInstitute/codices/contents/${CROSSPOINT_CATALOG_PATH}?ref=main`,
-      `https://api.github.com/repos/CastaliaInstitute/codices/contents/${CROSSPOINT_LINKS_PATH}?ref=main`,
-      `https://api.github.com/repos/CastaliaInstitute/codices/contents/${CROSSPOINT_CATALOG_PATH}?ref=main`,
-      `https://api.github.com/repos/CastaliaInstitute/codices/contents/${CROSSPOINT_CATALOG_PATH}`,
-      `https://api.github.com/repos/CastaliaInstitute/codices/contents/${CROSSPOINT_OPDS_PATH}?ref=main`,
-      `https://api.github.com/repos/CastaliaInstitute/codices/contents/${CROSSPOINT_OPDS_PATH}`,
-      `https://api.github.com/repos/CastaliaInstitute/codices/contents/${CROSSPOINT_LINKS_PATH}?ref=main`,
-      `https://api.github.com/repos/CastaliaInstitute/codices/contents/${CROSSPOINT_LINKS_PATH}`,
-    ]);
-
-    const epubPut = JSON.parse(fetchMock.mock.calls[1]![1]!.body as string) as Record<
-      string,
-      unknown
-    >;
-    const metadataPut = JSON.parse(fetchMock.mock.calls[3]![1]!.body as string) as Record<
-      string,
-      unknown
-    >;
-
-    expect(epubPut).toMatchObject({
-      branch: 'main',
-      message: 'Add Codex EPUB: My Codex',
-      sha: 'old-sha',
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      'https://pilmscrodlitdrygabvo.supabase.co/functions/v1/castalia-github-repository',
+    );
+    const init = fetchMock.mock.calls[0]?.[1];
+    expect(init).toMatchObject({
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer castalia-supabase-token',
+        'Content-Type': 'application/json',
+      },
     });
-    expect(metadataPut).toMatchObject({
-      branch: 'main',
-      message: 'Add Codex metadata: My Codex',
-      sha: 'old-sha',
-    });
-    expect(String(metadataPut['content'])).toBeTruthy();
-
-    const catalog = JSON.parse(
-      decodePutContent(fetchMock.mock.calls[7] as [unknown, RequestInit | undefined]),
-    ) as Record<string, unknown>;
-    const opds = decodePutContent(fetchMock.mock.calls[9] as [unknown, RequestInit | undefined]);
-    const links = JSON.parse(
-      decodePutContent(fetchMock.mock.calls[11] as [unknown, RequestInit | undefined]),
-    ) as Record<string, unknown>;
-
-    expect(catalog).toMatchObject({
-      schema: 'castalia.crosspoint.catalog.v1',
+    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    expect(body).toMatchObject({
+      action: 'publish-codex',
       repository: {
         id: 'repo-1',
         name: 'Scriptorium Codices',
       },
-    });
-    expect(catalog['publications']).toMatchObject([
-      {
-        bookHash: 'bookhash',
+      book: {
+        hash: 'bookhash',
         title: 'My Codex',
-        href: 'https://raw.githubusercontent.com/CastaliaInstitute/codices/main/codices/bookhash/book.epub',
-        metadataHref:
-          'https://raw.githubusercontent.com/CastaliaInstitute/codices/main/codices/bookhash/metadata.json',
-        linksHref:
-          'https://raw.githubusercontent.com/CastaliaInstitute/codices/main/crosspoint/links.json',
       },
-    ]);
-    expect(opds).toContain('<feed xmlns="http://www.w3.org/2005/Atom">');
-    expect(opds).toContain('rel="http://opds-spec.org/acquisition"');
-    expect(opds).toContain(
-      'href="https://raw.githubusercontent.com/CastaliaInstitute/codices/main/codices/bookhash/book.epub"',
-    );
-    expect(links).toMatchObject({
-      schema: 'castalia.crossbook-links.v1',
-      links: [
+      file: {
+        name: 'my-codex.epub',
+        type: 'application/epub+zip',
+        size: 10,
+        contentBase64: 'ZXB1YiBieXRlcw==',
+      },
+      crossBookLinks: [
         {
           id: 'link-1',
           rel: 'references',

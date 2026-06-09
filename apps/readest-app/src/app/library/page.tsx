@@ -91,10 +91,7 @@ import ImportFromUrlDialog from './components/ImportFromUrlDialog';
 import NewCodexDialog from './components/NewCodexDialog';
 import { castaliaClient } from '@/services/castalia/client';
 import { codexLinkStore } from '@/services/castalia/codexLinks';
-import {
-  getGitHubRepositoryToken,
-  publishCodexToGitHub,
-} from '@/services/castalia/githubRepository';
+import { publishCodexToGitHub } from '@/services/castalia/githubRepository';
 import { convertToEpubWithWorker } from '@/services/send/conversion/conversionWorker';
 import { getClipOptions } from '@/services/send/clipOptions';
 import { invoke } from '@tauri-apps/api/core';
@@ -979,12 +976,11 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
 
     const activeRepository = castaliaClient.getActiveRepository();
     if (activeRepository?.provider === 'git') {
-      const githubToken = getGitHubRepositoryToken(activeRepository.id);
-      if (!githubToken) {
+      if (!token) {
         eventDispatcher.dispatch('toast', {
           type: 'warning',
           timeout: 5000,
-          message: _('Save a GitHub token to publish new Codices to this repository.'),
+          message: _('Sign in to Castalia to publish new Codices to this repository.'),
         });
       } else {
         const createdBook = useLibraryStore
@@ -994,7 +990,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
           try {
             await publishCodexToGitHub({
               repository: activeRepository,
-              token: githubToken,
+              token,
               book: createdBook,
               file,
               crossBookLinks: codexLinkStore.listCrossPointLinks(createdBook.hash),
