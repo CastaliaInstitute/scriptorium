@@ -17,6 +17,9 @@ export const setupSupabaseMocks = async (
   },
 ) => {
   const { supabase, createSupabaseAdminClient } = await import('@/utils/supabase');
+  if (!supabase) {
+    throw new Error('Supabase mock requires a configured Supabase client');
+  }
 
   vi.mocked(supabase.auth.getUser).mockResolvedValue(
     customResponses.getUser || {

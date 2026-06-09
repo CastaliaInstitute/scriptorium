@@ -89,6 +89,11 @@ import ImportFromFolderDialog, {
 } from './components/ImportFromFolderDialog';
 import ImportFromUrlDialog from './components/ImportFromUrlDialog';
 import NewCodexDialog from './components/NewCodexDialog';
+import { castaliaClient } from '@/services/castalia/client';
+import {
+  getGitHubRepositoryToken,
+  publishCodexToGitHub,
+} from '@/services/castalia/githubRepository';
 import { convertToEpubWithWorker } from '@/services/send/conversion/conversionWorker';
 import { getClipOptions } from '@/services/send/clipOptions';
 import { invoke } from '@tauri-apps/api/core';
@@ -967,9 +972,47 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
     setIsSelectMode(false);
     const groupId = searchParams?.get('group') || '';
     const importedBookIds = await importBooks([{ file }], groupId);
-    if (importedBookIds.length > 0) {
-      setPendingNavigationBookIds([importedBookIds[0]!]);
+    const importedBookId = importedBookIds[0];
+    if (!importedBookId) return;
+
+    const activeRepository = castaliaClient.getActiveRepository();
+    if (activeRepository?.provider === 'git') {
+      const githubToken = getGitHubRepositoryToken(activeRepository.id);
+      if (!githubToken) {
+        eventDispatcher.dispatch('toast', {
+          type: 'warning',
+          timeout: 5000,
+          message: _('Save a GitHub token to publish new Codices to this repository.'),
+        });
+      } else {
+        const createdBook = useLibraryStore
+          .getState()
+          .library.find((book) => book.hash === importedBookId);
+        if (createdBook) {
+          try {
+            await publishCodexToGitHub({
+              repository: activeRepository,
+              token: githubToken,
+              book: createdBook,
+              file,
+            });
+            eventDispatcher.dispatch('toast', {
+              type: 'success',
+              timeout: 3000,
+              message: _('Codex published to GitHub'),
+            });
+          } catch (error) {
+            console.error('Failed to publish Codex to GitHub:', error);
+            eventDispatcher.dispatch('toast', {
+              type: 'error',
+              timeout: 6000,
+              message: _('Unable to publish Codex to GitHub'),
+            });
+          }
+        }
+      }
     }
+    setPendingNavigationBookIds([importedBookId]);
   };
 
   const handleImportBookFromUrl = async (url: string) => {
