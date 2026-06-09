@@ -90,6 +90,7 @@ import ImportFromFolderDialog, {
 import ImportFromUrlDialog from './components/ImportFromUrlDialog';
 import NewCodexDialog from './components/NewCodexDialog';
 import { castaliaClient } from '@/services/castalia/client';
+import { codexLinkStore } from '@/services/castalia/codexLinks';
 import {
   getGitHubRepositoryToken,
   publishCodexToGitHub,
@@ -112,6 +113,7 @@ import TransferQueuePanel from './components/TransferQueuePanel';
  * mirrors the behaviour of native file pickers on most desktop OSes.
  */
 const LAST_IMPORT_FOLDER_KEY = 'readest:lastImportFolder';
+
 /**
  * Key used to persist the user's last "Folder Structure" choice
  * ('keep' vs 'flatten'). Restored as the default radio selection on
@@ -995,6 +997,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
               token: githubToken,
               book: createdBook,
               file,
+              crossBookLinks: codexLinkStore.listCrossPointLinks(createdBook.hash),
             });
             eventDispatcher.dispatch('toast', {
               type: 'success',
