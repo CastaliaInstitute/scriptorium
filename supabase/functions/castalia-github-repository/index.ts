@@ -498,6 +498,7 @@ serve(async (request) => {
   const githubToken =
     Deno.env.get('CASTALIA_GITHUB_TOKEN') ||
     Deno.env.get('COMMONPLACE_GITHUB_TOKEN') ||
+    Deno.env.get('FAMILY_RHYTHM_GITHUB_TOKEN') ||
     Deno.env.get('GITHUB_TOKEN');
   if (!githubToken) return jsonResponse({ error: 'GitHub access is not configured' }, 503);
 
