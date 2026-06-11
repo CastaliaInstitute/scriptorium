@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildShareUrl, parseShareDeepLink } from '@/utils/share';
+import { buildShareUrl, parseShareDeepLink, parseClipDeepLink } from '@/utils/share';
 
 describe('buildShareUrl', () => {
   it('builds the canonical https URL for a token', () => {
@@ -57,5 +57,44 @@ describe('parseShareDeepLink', () => {
     expect(parseShareDeepLink('')).toBeNull();
     expect(parseShareDeepLink('not-a-url')).toBeNull();
     expect(parseShareDeepLink('ftp://web.readest.com/s/' + VALID_TOKEN)).toBeNull();
+  });
+});
+
+describe('parseClipDeepLink', () => {
+  it('parses readest://clip?url=<encoded>', () => {
+    const encoded = encodeURIComponent('https://example.com/article');
+    expect(parseClipDeepLink(`readest://clip?url=${encoded}`)).toEqual({
+      url: 'https://example.com/article',
+    });
+  });
+
+  it('parses readest://clip/<encoded>', () => {
+    const encoded = encodeURIComponent('https://example.com/article?x=1&y=2');
+    expect(parseClipDeepLink(`readest://clip/${encoded}`)).toEqual({
+      url: 'https://example.com/article?x=1&y=2',
+    });
+  });
+
+  it('parses https://web.readest.com/clip?url=<encoded>', () => {
+    const encoded = encodeURIComponent('https://example.com/article');
+    expect(parseClipDeepLink(`https://web.readest.com/clip?url=${encoded}`)).toEqual({
+      url: 'https://example.com/article',
+    });
+  });
+
+  it('accepts clip links from readest subdomains for consistency', () => {
+    const encoded = encodeURIComponent('https://example.com/article');
+    expect(parseClipDeepLink(`https://staging.readest.com/clip?url=${encoded}`)).toEqual({
+      url: 'https://example.com/article',
+    });
+  });
+
+  it('returns null for malformed clip links', () => {
+    expect(parseClipDeepLink('readest://note?url=https://example.com')).toBeNull();
+    expect(parseClipDeepLink('https://web.readest.com/clip')).toBeNull();
+    expect(parseClipDeepLink('https://web.readest.com/clip?url=javascript:alert(1)')).toBeNull();
+    expect(parseClipDeepLink('readest://clip/not-a-url')).toBeNull();
+    expect(parseClipDeepLink('readest://clip/not%20a%20link')).toBeNull();
+    expect(parseClipDeepLink('not-a-url')).toBeNull();
   });
 });

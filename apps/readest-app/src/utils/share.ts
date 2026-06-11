@@ -10,10 +10,24 @@ export interface ShareDeepLink {
 const TOKEN_RE = new RegExp(`^[A-Za-z0-9]{${SHARE_TOKEN_LENGTH}}$`);
 
 const isValidToken = (raw: unknown): raw is string => typeof raw === 'string' && TOKEN_RE.test(raw);
+const VALID_URL_SCHEME = /^https?:\/\//i;
 
 // Canonical share URL embedded in the dialog, share sheet, and any "copy link"
 // affordance. Always points at the public web target.
 export const buildShareUrl = (token: string): string => `${SHARE_BASE_URL}/${token}`;
+
+const tryDecode = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+const isReadestWebShareHost = (host: string): boolean => {
+  if (host === new URL(READEST_WEB_BASE_URL).host) return true;
+  return host.endsWith('.readest.com');
+};
 
 // Parses both the custom-scheme and HTTPS forms used by the deeplink ingress.
 //   readest://share/{token}
@@ -41,6 +55,50 @@ export const parseShareDeepLink = (url: string): ShareDeepLink | null => {
     const token = segments[1]!;
     return isValidToken(token) ? { token } : null;
   }
+  return null;
+};
+
+export interface ClipDeepLink {
+  url: string;
+}
+
+// Parses clip deep links from:
+//   readest://clip?url=<encoded>
+//   readest://clip/<encoded>
+//   https://web.readest.com/clip?url=<encoded>
+export const parseClipDeepLink = (rawUrl: string): ClipDeepLink | null => {
+  if (!rawUrl) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return null;
+  }
+
+  if (parsed.protocol === 'readest:') {
+    if (parsed.host !== 'clip') return null;
+
+    const fromQuery = parsed.searchParams.get('url');
+    if (fromQuery) {
+      const decoded = tryDecode(fromQuery);
+      return VALID_URL_SCHEME.test(decoded) ? { url: decoded } : null;
+    }
+
+    const embedded = parsed.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+    if (!embedded) return null;
+    const decoded = tryDecode(embedded);
+    return VALID_URL_SCHEME.test(decoded) ? { url: decoded } : null;
+  }
+
+  if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+    if (!isReadestWebShareHost(parsed.host)) return null;
+    if (parsed.pathname !== '/clip') return null;
+    const fromQuery = parsed.searchParams.get('url');
+    if (!fromQuery) return null;
+    const decoded = tryDecode(fromQuery);
+    return VALID_URL_SCHEME.test(decoded) ? { url: decoded } : null;
+  }
+
   return null;
 };
 

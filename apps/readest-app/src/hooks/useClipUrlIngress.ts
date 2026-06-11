@@ -10,6 +10,7 @@ import { convertToEpubWithWorker } from '@/services/send/conversion/conversionWo
 import { getClipOptions } from '@/services/send/clipOptions';
 import { eventDispatcher } from '@/utils/event';
 import { parseAnnotationDeepLink } from '@/utils/deeplink';
+import { parseClipDeepLink } from '@/utils/share';
 import { useTranslation } from './useTranslation';
 
 interface ClipOptions {
@@ -119,29 +120,11 @@ export function useClipUrlIngress() {
     if (!isTauriAppPlatform() || !appService) return;
 
     const handle = (url: string) => {
-      // iOS Share Extension forwards URLs to the main app in one of
-      // two shapes — both are unwrapped to the inner article URL so
-      // we can share the http(s) clip path with the Android side:
-      //
-      //   - Universal Link (primary):
-      //       https://web.readest.com/clip?url=<encoded>
-      //   - Custom URL scheme (fallback):
-      //       readest://clip?url=<encoded>
-      const isClipUrl =
-        url.startsWith('readest://clip?') ||
-        url.startsWith('readest://clip/') ||
-        /^https:\/\/web\.readest\.com\/clip(?:[/?].*)?$/i.test(url);
-      if (isClipUrl) {
-        try {
-          const inner = new URL(url).searchParams.get('url');
-          if (inner) {
-            url = inner;
-          } else {
-            return;
-          }
-        } catch {
-          return;
-        }
+      // iOS Share Extension and universal clip links may wrap an inner
+      // http(s) article URL.
+      const clip = parseClipDeepLink(url);
+      if (clip) {
+        url = clip.url;
       }
       // Only act on http(s). file://, content://, blob: and data: belong
       // to other consumers (or aren't shareable URLs).
