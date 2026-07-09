@@ -193,6 +193,14 @@ a later source PR. The reusable annotation workflow can generate these artifacts
 with `generate_edit_proposals: true` and upload them as the
 `readest-edit-proposals` Actions artifact.
 
+Accepted source edits are applied through an explicit review gate, not directly
+from AI output. `apply_accepted_readest_source_edits.py` reads the proposal
+JSONL artifact, requires accepted proposal keys supplied by a reviewer, refuses
+manual-review proposals, validates unified diffs with `git apply --check`, and
+can create a source branch/PR for one target repository. This makes the bridge
+from marginalia to source edits auditable while keeping EPUBs as rebuildable
+artifacts.
+
 ## Security
 
 Required principles:

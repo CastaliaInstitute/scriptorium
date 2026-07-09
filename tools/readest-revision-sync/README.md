@@ -146,6 +146,23 @@ the `readest-edit-proposals` artifact. Keep `edit_proposals_use_ai: false` for
 manual-review prompt artifacts, or set it to `true` to ask Gemini for proposed
 unified diffs.
 
+Accepted proposal diffs can be applied only after an explicit human gate. Pass
+one or more proposal keys from the artifact; proposals marked
+`needs_manual_review` or lacking a unified diff are refused:
+
+```sh
+python3 scripts/apply_accepted_readest_source_edits.py \
+  --input .atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl \
+  --workspace-root .. \
+  --accept-key readest-edit:bookhash:note-1:hash \
+  --dry-run
+```
+
+After review, remove `--dry-run`. To prepare a reviewed source PR in a single
+target repository, pass `--branch codex/apply-readest-edits --create-pr`. The
+tool validates diffs with `git apply --check`, refuses unaccepted proposal keys,
+and never edits EPUB artifacts directly.
+
 ## Optional Variables
 
 ```text
@@ -162,6 +179,7 @@ python3 -m py_compile scripts/*.py
 python3 scripts/sync_epubs_to_webdav.py --dry-run --flatten --mirror "output/epub/*.epub"
 python3 scripts/create_readest_review_issues.py --input /tmp/readest-ingest-output-2/readest-annotations.mapped.jsonl --dry-run --limit 1
 python3 scripts/propose_readest_source_edits.py --input output/readest/readest-annotations.mapped.jsonl --no-ai
+python3 scripts/apply_accepted_readest_source_edits.py --input .atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl --accept-key readest-edit:bookhash:note-1:hash --dry-run
 ```
 
 ## Boundary
