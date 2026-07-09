@@ -22,6 +22,11 @@ def record(annotation_id: str, highlight_hash: str = "hash") -> dict:
         "source_repo": "AtelierNymphet",
         "source_path": "source/absinthe.md",
         "source_ref": "main",
+        "source_char_start": 10,
+        "source_char_end": 42,
+        "source_link": {
+            "github_url": "https://github.com/AtelierNymphet/AtelierNymphet/blob/main/source/absinthe.md",
+        },
         "match_confidence": "high",
         "highlight_text": "green hour",
         "reader_note": "compare facebook:daniel-du-kinque:2026.07.02.02:24",
@@ -96,6 +101,8 @@ class ReviewIssueToolsTest(unittest.TestCase):
         self.assertEqual(len(created), 1)
         self.assertEqual(created[0][0], "title note-2")
         self.assertIn("<!-- readest-review-key: readest:bookhash:note-2:hash -->", created[0][1])
+        self.assertIn("Repository source", created[0][1])
+        self.assertIn("Source span: `10`-`42`", created[0][1])
 
     def test_cross_reference_parser_normalizes_supported_references(self) -> None:
         parsed = parse_cross_references(

@@ -68,6 +68,43 @@ class IngestReadestAnnotationsTest(unittest.TestCase):
             self.assertEqual(entries[0].github_path, "Absinthe/source/chapter-1.md")
             self.assertEqual(entries[0].canonical_ref, payload["chunk"]["canonical_ref"])
 
+    def test_normalized_record_includes_structured_source_link(self) -> None:
+        entry = ingest.SourceMapEntry(
+            work_slug="absinthe",
+            title="Absinthe",
+            canonical_ref="https://ateliernymphet.com/larecherche/absinthe/chapter-1#green-hour",
+            fragment="green-hour",
+            github_owner="AtelierNymphet",
+            github_repo="AtelierNymphet",
+            github_ref="main",
+            github_path="Absinthe/source/chapter 1.md",
+            char_start=10,
+            char_end=42,
+            content="The green hour begins here.",
+            content_hash="content-hash",
+        )
+
+        normalized = ingest.normalized_record(
+            {"hash": "bookhash", "title": "Absinthe", "author": "Daniel"},
+            {"schemaVersion": 3},
+            {
+                "id": "note-1",
+                "text": "The green hour",
+                "note": "compare tdw/absinthe/green-hour",
+                "cfi": "epubcfi(/6/2!/4/1:0)",
+            },
+            ingest.MatchResult("mapped", "high", "matched", entry),
+        )
+
+        self.assertEqual(normalized["source_link"]["repository"], "AtelierNymphet/AtelierNymphet")
+        self.assertEqual(normalized["source_link"]["path"], "Absinthe/source/chapter 1.md")
+        self.assertEqual(normalized["source_link"]["char_start"], 10)
+        self.assertEqual(normalized["source_link"]["char_end"], 42)
+        self.assertEqual(
+            normalized["source_link"]["github_url"],
+            "https://github.com/AtelierNymphet/AtelierNymphet/blob/main/Absinthe/source/chapter%201.md",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
