@@ -66,6 +66,13 @@ READEST_WEBDAV_USERNAME
 READEST_WEBDAV_PASSWORD
 ```
 
+If a caller's `epub_build_command` clones sibling private repositories before
+sync, also configure:
+
+```text
+SOURCE_REPO_TOKEN
+```
+
 For annotation review with Gemini and private source checkouts, configure:
 
 ```text
@@ -177,6 +184,11 @@ Required inputs per caller:
   visible from `PROPFIND /`.
 - `smoke_required_opds_entries`: newline-separated title or href substrings
   that must appear in `/opds`.
+
+Optional secret:
+
+- `SOURCE_REPO_TOKEN`: exposed as `GH_TOKEN` during `epub_build_command`, for
+  builds that need to clone private source repositories before syncing EPUBs.
 
 Run dry first, then live:
 

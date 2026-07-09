@@ -60,6 +60,8 @@ on:
         required: true
       READEST_WEBDAV_PASSWORD:
         required: true
+      SOURCE_REPO_TOKEN:
+        required: false
   workflow_dispatch:
     inputs:
       epub_globs:
@@ -142,7 +144,8 @@ jobs:
         if: ${{ inputs.epub_build_command != '' }}
         working-directory: caller
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+          SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
         run: ${{ inputs.epub_build_command }}
 
       - name: Sync EPUBs
