@@ -29,6 +29,9 @@ OPDS and Supabase-backed WebDAV.
 - [ ] Configure required Google Secret Manager secrets:
   `supabase-url`, `supabase-service-role-key`, `readest-webdav-password`.
 - [ ] Deploy Cloud Run WebDAV from Scriptorium workflow.
+- [ ] Replace placeholder or mismatched `READEST_WEBDAV_URL`,
+  `READEST_WEBDAV_USERNAME`, and `READEST_WEBDAV_PASSWORD` secrets in
+  Scriptorium, Bibliotech, and AtelierNymphet after deployment verification.
 - [ ] Confirm `/healthz`, WebDAV `PROPFIND /`, and `GET /opds` on deployed service.
 
 ## Phase 2: Readest Fork Sync Behavior
@@ -51,8 +54,10 @@ OPDS and Supabase-backed WebDAV.
 
 - [x] Add Bibliotech caller workflow for Scriptorium WebDAV sync.
 - [x] Dry-run Bibliotech sync globs locally.
-- [x] Configure Bibliotech secrets:
+- [ ] Configure Bibliotech secrets with the verified deployed WebDAV endpoint:
   `READEST_WEBDAV_URL`, `READEST_WEBDAV_USERNAME`, `READEST_WEBDAV_PASSWORD`.
+- [x] Detect Bibliotech live sync failures caused by malformed URL or WebDAV
+  credential mismatch.
 - [x] Run Bibliotech workflow in dry-run mode.
 - [x] Build Bibliotech EPUB artifacts inside the GitHub Action before WebDAV sync.
 - [ ] Run Bibliotech workflow live against WebDAV.
@@ -68,7 +73,8 @@ OPDS and Supabase-backed WebDAV.
 - [x] Allowlist the new workflow in AtelierNymphet `.gitignore`.
 - [x] Dry-run La Recherche sync globs locally.
 - [x] Dry-run Twenty Dollar Words sync globs locally.
-- [x] Configure or verify AtelierNymphet WebDAV secrets:
+- [ ] Configure or verify AtelierNymphet WebDAV secrets with the verified
+  deployed WebDAV endpoint:
   `READEST_WEBDAV_URL`, `READEST_WEBDAV_USERNAME`, `READEST_WEBDAV_PASSWORD`.
 - [x] Configure AtelierNymphet `GEMINI_API_KEY`.
 - [x] Configure AtelierNymphet `SOURCE_REPO_TOKEN` for private source-map

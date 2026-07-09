@@ -35,6 +35,13 @@ READEST_WEBDAV_PASSWORD
 readest-webdav-password
 ```
 
+`invalid WEBDAV_URL` or `no host given` means `READEST_WEBDAV_URL` is not a
+real absolute URL, commonly because it was set to `https://` without a host.
+`HTTP 401` or `HTTP 403` during `OPTIONS /`, `MKCOL`, or `PUT` means the caller
+repo secrets do not match the deployed service credentials. Re-read the
+deployed Cloud Run URL and Secret Manager password, then overwrite the caller
+repo secrets in every publishing repo.
+
 Do not print secret values in logs or chat output. Pipe them directly from the
 secret manager to `gh secret set` when possible.
 
