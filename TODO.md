@@ -120,6 +120,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Upload patch proposal artifacts from the annotation workflow.
 - [x] Gate patch proposals on explicit accepted proposal keys.
 - [x] Add helper to open GitHub PRs from accepted source-edit proposals.
+- [x] Install AtelierNymphet workflow to apply accepted Readest edit proposals.
 - [x] Rebuild EPUBs after accepted edits.
 - [ ] Resync updated EPUBs and verify Readest auto-refresh.
 
