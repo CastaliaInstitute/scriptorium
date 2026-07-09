@@ -1,0 +1,53 @@
+name: Deploy Scriptorium WebDAV
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_name:
+        description: "Cloud Run service name"
+        required: false
+        default: "readest-webdav"
+      region:
+        description: "Cloud Run region"
+        required: false
+        default: "us-west1"
+      storage_backend:
+        description: "Storage backend: supabase or gcs"
+        required: false
+        default: "supabase"
+      storage_bucket:
+        description: "Supabase Storage bucket or GCS bucket"
+        required: false
+        default: "readest"
+      webdav_root_prefix:
+        description: "Storage prefix exposed as WebDAV root"
+        required: false
+        default: ""
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy Cloud Run WebDAV
+        working-directory: tools/readest-webdav-cloudrun
+        env:
+          SERVICE_NAME: ${{ inputs.service_name }}
+          REGION: ${{ inputs.region }}
+          STORAGE_BACKEND: ${{ inputs.storage_backend }}
+          SUPABASE_STORAGE_BUCKET: ${{ inputs.storage_bucket }}
+          WEBDAV_ROOT_PREFIX: ${{ inputs.webdav_root_prefix }}
+          WEBDAV_USERNAME: ${{ vars.READEST_WEBDAV_USERNAME || 'readest' }}
+          WEBDAV_HIDE_LEGACY_ROOT_FOLDER: "true"
+        run: ./deploy.sh

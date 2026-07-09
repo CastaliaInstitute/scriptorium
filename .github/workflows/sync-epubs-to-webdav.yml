@@ -1,0 +1,114 @@
+name: Sync EPUBs to Scriptorium WebDAV
+
+on:
+  workflow_call:
+    inputs:
+      epub_globs:
+        description: "Space-separated EPUB globs in the caller repository"
+        required: false
+        type: string
+        default: "output/epub/*.epub"
+      remote_prefix:
+        description: "Remote WebDAV prefix"
+        required: false
+        type: string
+        default: ""
+      dry_run:
+        description: "Print uploads without PUT"
+        required: false
+        type: boolean
+        default: false
+      flatten:
+        description: "Upload all EPUBs directly under the remote prefix"
+        required: false
+        type: boolean
+        default: false
+      mirror:
+        description: "Delete remote EPUBs under the prefix that are not matched locally"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      READEST_WEBDAV_URL:
+        required: true
+      READEST_WEBDAV_USERNAME:
+        required: true
+      READEST_WEBDAV_PASSWORD:
+        required: true
+  workflow_dispatch:
+    inputs:
+      epub_globs:
+        description: "Space-separated EPUB globs"
+        required: false
+        default: "output/epub/*.epub"
+      remote_prefix:
+        description: "Remote WebDAV prefix"
+        required: false
+        default: ""
+      dry_run:
+        description: "Print uploads without PUT"
+        required: false
+        type: boolean
+        default: true
+      flatten:
+        description: "Upload all EPUBs directly under the remote prefix"
+        required: false
+        type: boolean
+        default: false
+      mirror:
+        description: "Delete remote EPUBs under the prefix that are not matched locally"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+        with:
+          path: caller
+
+      - name: Checkout Scriptorium automation
+        uses: actions/checkout@v4
+        with:
+          repository: CastaliaInstitute/scriptorium
+          ref: main
+          path: scriptorium
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync EPUBs
+        env:
+          WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
+          WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
+          WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}
+        run: |
+          set -euo pipefail
+          read -r -a args <<< "${{ inputs.epub_globs }}"
+          dry_run=()
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            dry_run+=(--dry-run)
+          fi
+          flatten=()
+          if [ "${{ inputs.flatten }}" = "true" ]; then
+            flatten+=(--flatten)
+          fi
+          mirror=()
+          if [ "${{ inputs.mirror }}" = "true" ]; then
+            mirror+=(--mirror)
+          fi
+          cd caller
+          python3 ../scriptorium/tools/readest-revision-sync/scripts/sync_epubs_to_webdav.py \
+            --remote-prefix "${{ inputs.remote_prefix }}" \
+            "${dry_run[@]}" \
+            "${flatten[@]}" \
+            "${mirror[@]}" \
+            "${args[@]}"

@@ -1,0 +1,18 @@
+name: Sync EPUBs to Readest
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync:
+    uses: CastaliaInstitute/scriptorium/.github/workflows/sync-epubs-to-webdav.yml@main
+    with:
+      epub_globs: "output/epub/*.epub"
+      remote_prefix: ""
+      flatten: true
+      mirror: false
+      dry_run: false
+    secrets:
+      READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
+      READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
+      READEST_WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}

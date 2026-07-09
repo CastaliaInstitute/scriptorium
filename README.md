@@ -65,6 +65,14 @@
 | **Accessibility**                          | Provides full keyboard navigation and supports for screen readers such as VoiceOver, TalkBack, NVDA, and Orca.         | ✅         |
 | **Visual & Focus Aids**                    | Reading ruler, paragraph-by-paragraph reading mode, and speed reading features.                                        | ✅         |
 
+## Scriptorium Integrations
+
+Castalia Scriptorium extends Readest with manuscript and marginalia workflows:
+repo-backed EPUB publishing, Supabase-backed WebDAV, OPDS catalog exposure, and
+Readest annotation review issues. See
+[Scriptorium Implementation Design](./docs/scriptorium-implementation-design.md)
+and [OPDS/WebDAV/Supabase Integration](./docs/integrations/opds-webdav-supabase.md).
+
 ## Planned Features
 
 <div align="left">🛠 Building</div>
