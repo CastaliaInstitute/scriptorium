@@ -53,6 +53,8 @@ Review automation
 
 A writable book object. A Codex may be an EPUB, manuscript draft,
 commonplace book, course reader, review packet, anthology, or published edition.
+The operational source-backed model is defined in
+[Scriptorium Manuscript Editing Model](manuscript-editing-model.md).
 
 ### Passage
 
@@ -253,5 +255,7 @@ public distribution requires explicit promotion to a separate public surface.
 
 ## Open Questions
 
-- What is the first manuscript editing surface: inline EPUB annotation editing,
-  Markdown-backed editor, or Codex document editor?
+No first-surface question remains open: the first implemented editing surface is
+source-backed marginalia review through Readest annotations, GitHub issues, and
+accepted source-edit PRs. Inline EPUB annotation editing and a Markdown-backed
+editor remain later UI surfaces.

@@ -110,10 +110,10 @@ OPDS and Supabase-backed WebDAV.
 
 ## Phase 7: Manuscript Editing
 
-- [ ] Choose the first editing surface:
+- [x] Choose the first editing surface:
   EPUB annotation editor, Markdown-backed editor, or Codex document editor.
-- [ ] Define Codex document model.
-- [ ] Map Codex passages to repo source files.
+- [x] Define Codex document model.
+- [x] Map Codex passages to repo source files.
 - [x] Generate patch proposal artifacts from mapped annotations.
 - [x] Upload patch proposal artifacts from the annotation workflow.
 - [x] Gate patch proposals on explicit accepted proposal keys.
