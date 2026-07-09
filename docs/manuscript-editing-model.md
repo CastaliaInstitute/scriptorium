@@ -99,6 +99,12 @@ Required fields:
 proposal application. `reader.cfi` is retained when exported by Readest, even
 when source matching is text-based.
 
+Mapped annotation records carry this bridge as `source_link`, including
+repository, ref, path, character span, content hash, canonical reference,
+fragment, and a GitHub source URL. Review issues render both the Readest CFI and
+the repository source span so an annotation can be traced back to editable
+source.
+
 ## Marginalia
 
 Marginalia attaches reader intent to a passage:

@@ -299,6 +299,7 @@ def normalized_record(
     }
 
     if entry:
+        source_link = build_source_link(entry)
         record["work_slug"] = entry.work_slug
         record["canonical_ref"] = entry.canonical_ref
         record["fragment"] = entry.fragment
@@ -309,7 +310,33 @@ def normalized_record(
         record["source_char_start"] = entry.char_start
         record["source_char_end"] = entry.char_end
         record["source_hash"] = entry.content_hash
+        record["source_link"] = source_link
     return record
+
+
+def build_source_link(entry: SourceMapEntry) -> dict[str, Any]:
+    owner = entry.github_owner or "AtelierNymphet"
+    repo = entry.github_repo
+    ref = entry.github_ref or "main"
+    path = entry.github_path
+    encoded_path = "/".join(urllib.parse.quote(part, safe="") for part in path.split("/") if part)
+    github_url = ""
+    if owner and repo and encoded_path:
+        github_url = f"https://github.com/{owner}/{repo}/blob/{urllib.parse.quote(ref, safe='')}/{encoded_path}"
+
+    return {
+        "repository": f"{owner}/{repo}" if owner and repo else repo,
+        "owner": owner,
+        "repo": repo,
+        "ref": ref,
+        "path": path,
+        "char_start": entry.char_start,
+        "char_end": entry.char_end,
+        "content_hash": entry.content_hash,
+        "canonical_ref": entry.canonical_ref,
+        "fragment": entry.fragment,
+        "github_url": github_url,
+    }
 
 
 def _build_readest_annotation_urls(book_hash: str, annotation_id: str, cfi: str | None) -> tuple[str, str, str]:

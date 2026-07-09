@@ -123,6 +123,11 @@ links, La Recherche paths, Twenty Dollar Words paths, and ordinary URLs. Issue
 bodies and review packets render those references under
 `Footnote/Endnote Cross-References` or `Cross-References`.
 
+Mapped records also include a structured `source_link` object with repository,
+ref, path, character span, content hash, canonical reference, fragment, and a
+GitHub source URL. This is the durable bridge from a Readest annotation/CFI to
+the repository source span used for issues and source-edit proposals.
+
 Each parsed reference includes `schema`, `kind`, `raw`, `target`, and
 `canonical_uri`. See
 [`docs/cross-reference-uri-schema.md`](../../docs/cross-reference-uri-schema.md)

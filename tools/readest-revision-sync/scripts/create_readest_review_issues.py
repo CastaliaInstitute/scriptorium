@@ -234,6 +234,10 @@ def issue_body(record: dict[str, Any], summary: dict[str, str], key: str) -> str
     for label, link in nav_links:
         if link:
             source_links.append(f"- {label}: [{link}]({link})")
+    source_link = record.get("source_link") if isinstance(record.get("source_link"), dict) else {}
+    github_url = source_link.get("github_url") if isinstance(source_link, dict) else None
+    if github_url:
+        source_links.append(f"- Repository source: [{github_url}]({github_url})")
 
     cross_references = record_cross_references(record)
     reference_links_block = (
@@ -269,6 +273,7 @@ def issue_body(record: dict[str, Any], summary: dict[str, str], key: str) -> str
     - Source repo: `{record.get("source_repo")}`
     - Source path: `{record.get("source_path")}`
     - Source ref: `{record.get("source_ref")}`
+    - Source span: `{record.get("source_char_start")}`-`{record.get("source_char_end")}`
     - Match confidence: `{record.get("match_confidence")}`
     - Readest book hash: `{readest.get("book_hash")}`
     - Readest annotation id: `{readest.get("annotation_id")}`
