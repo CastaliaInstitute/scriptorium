@@ -77,11 +77,11 @@ OPDS and Supabase-backed WebDAV.
 
 - [x] Centralize Readest JSON download, annotation ingest, and Gemini issue creation scripts.
 - [x] Add reusable comments-to-issues workflow.
-- [ ] Verify Readest export JSON layout from live WebDAV.
+- [x] Verify Readest export JSON layout from live WebDAV.
 - [ ] Verify AtelierNymphet source map path:
   `LaRecherche/output/rag/rag-ingest-manifest.jsonl`.
-- [ ] Run annotation workflow in dry-run mode.
-- [ ] Confirm generated issues include:
+- [x] Run annotation workflow in dry-run mode.
+- [x] Confirm generated issues include:
   Readest deep links, source refs, highlight text, note text, and cross-reference links.
 - [ ] Run annotation workflow live and create test issue.
 - [ ] Add duplicate prevention tests around issue keys.
@@ -90,14 +90,14 @@ OPDS and Supabase-backed WebDAV.
 ## Phase 6: Cross-References and Marginalia
 
 - [ ] Define canonical cross-reference URI schema.
-- [ ] Support datetime-stamped message/email references, for example:
+- [x] Support datetime-stamped message/email references, for example:
   `facebook:daniel-du-kinque:2026.07.02.02:24`.
-- [ ] Add parser for explicit cross-references in notes and marginalia.
+- [x] Add parser for explicit cross-references in notes and marginalia.
 - [ ] Add generated footnote/endnote references between La Recherche and Twenty Dollar Words.
 - [ ] Add source-map links from EPUB CFI to repository path/span.
 - [ ] Add optional marginalia layers:
   personal, faculty, public, AI review.
-- [ ] Persist marginalia as durable JSON objects, not only UI state.
+- [x] Persist parsed annotation cross-references as durable JSON objects, not only UI state.
 
 ## Phase 7: Manuscript Editing
 

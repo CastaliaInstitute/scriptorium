@@ -78,6 +78,12 @@ for example:
 facebook:daniel-du-kinque:2026.07.02.02:24
 ```
 
+The first implemented surface is the Readest annotation ingest pipeline. It
+extracts explicit references from highlight/note text into durable JSON objects
+with `kind`, `raw`, and `target` fields, plus timestamp metadata for
+datetime-stamped anchors. Review packets and GitHub issues render those
+references as footnote/endnote cross-reference material.
+
 ## Storage and Sync
 
 ### WebDAV
