@@ -112,3 +112,9 @@ Scriptorium's Readest fork includes `bookFileRefresh`, which redownloads an
 already-synced EPUB when the remote synced book has a newer `uploadedAt` value
 or a changed `metaHash`. This is what makes an updated `Absinthe.epub` propagate
 to devices after sync instead of requiring manual delete/reimport.
+
+## Operations
+
+Use [Readest Sync Operations Runbook](../operations/readest-sync-runbook.md)
+for live checks, missing-book diagnostics, missing or stale covers, deleted-book
+tombstones, legacy layout cleanup, and the accepted-edit rebuild loop.

@@ -128,7 +128,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Add smoke verifier for deployed WebDAV and OPDS.
 - [ ] Run smoke verifier against deployed WebDAV and OPDS.
 - [ ] Add a release checklist for Scriptorium reader builds.
-- [ ] Add a runbook for failed sync, missing covers, and deleted-book tombstones.
+- [x] Add a runbook for failed sync, missing covers, and deleted-book tombstones.
 - [ ] Decide public/private policy for Bibliotech, AtelierNymphet, and review artifacts.
 
 ## Current Completion Criteria
