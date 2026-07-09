@@ -91,6 +91,12 @@ with `kind`, `raw`, and `target` fields, plus timestamp metadata for
 datetime-stamped anchors. Review packets and GitHub issues render those
 references as footnote/endnote cross-reference material.
 
+Annotation review runs also emit generated Markdown endnote artifacts, grouped
+by work, so source repositories can include La Recherche, Twenty Dollar Words,
+message/email, URL, and Readest deep-link references in rebuilt EPUBs. These
+files are build inputs, not canonical manuscript source; accepted manuscript
+changes still land in the source repositories first.
+
 Canonical machine addresses are documented in
 [Scriptorium Cross-Reference URI Schema](cross-reference-uri-schema.md). The
 first schema version emits `scriptorium://message/...` for external message or

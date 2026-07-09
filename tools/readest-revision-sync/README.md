@@ -123,6 +123,21 @@ links, La Recherche paths, Twenty Dollar Words paths, and ordinary URLs. Issue
 bodies and review packets render those references under
 `Footnote/Endnote Cross-References` or `Cross-References`.
 
+The reusable comments workflow also generates Markdown endnote artifacts from
+mapped annotations:
+
+```sh
+python3 scripts/generate_cross_reference_notes.py \
+  --input output/readest/readest-annotations.mapped.jsonl \
+  --out-dir .atelier/readest-cross-reference-notes
+```
+
+The output is one `*.cross-reference-endnotes.md` file per work plus
+`summary.json`. EPUB build pipelines can include those Markdown files as an
+endnotes appendix, preserving Readest web/app deep links, canonical
+`scriptorium://` references, marginalia layer metadata, and La Recherche to
+Twenty Dollar Words links.
+
 Mapped records also include a structured `source_link` object with repository,
 ref, path, character span, content hash, canonical reference, fragment, and a
 GitHub source URL. This is the durable bridge from a Readest annotation/CFI to
@@ -196,6 +211,7 @@ python3 scripts/sync_epubs_to_webdav.py --dry-run --flatten --mirror "output/epu
 python3 scripts/create_readest_review_issues.py --input /tmp/readest-ingest-output-2/readest-annotations.mapped.jsonl --dry-run --limit 1
 python3 scripts/propose_readest_source_edits.py --input output/readest/readest-annotations.mapped.jsonl --no-ai
 python3 scripts/apply_accepted_readest_source_edits.py --input .atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl --accept-key readest-edit:bookhash:note-1:hash --dry-run
+python3 scripts/generate_cross_reference_notes.py --input output/readest/readest-annotations.mapped.jsonl
 ```
 
 ## Boundary

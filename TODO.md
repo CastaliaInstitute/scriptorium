@@ -102,7 +102,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Support datetime-stamped message/email references, for example:
   `facebook:daniel-du-kinque:2026.07.02.02:24`.
 - [x] Add parser for explicit cross-references in notes and marginalia.
-- [ ] Add generated footnote/endnote references between La Recherche and Twenty Dollar Words.
+- [x] Add generated footnote/endnote references between La Recherche and Twenty Dollar Words.
 - [x] Add source-map links from EPUB CFI to repository path/span.
 - [x] Add optional marginalia layers:
   personal, faculty, public, AI review.
