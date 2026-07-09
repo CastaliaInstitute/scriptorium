@@ -101,6 +101,7 @@ describe('bookFileRefresh', () => {
       book({
         hash: 'book-1',
         title: 'Remote title',
+        metaHash: 'remote-meta',
         updatedAt: 400,
         uploadedAt: 800,
         downloadedAt: null,
@@ -113,6 +114,7 @@ describe('bookFileRefresh', () => {
 
     expect(merged.title).toBe('Local title');
     expect(merged.uploadedAt).toBe(800);
+    expect(merged.metaHash).toBe('remote-meta');
     expect(merged.downloadedAt).toBe(900);
     expect(merged.coverDownloadedAt).toBe(120);
     expect(merged.coverImageUrl).toBe('local-cover-url');
@@ -132,6 +134,7 @@ describe('bookFileRefresh', () => {
       book({
         hash: 'book-1',
         title: 'Remote title',
+        metaHash: 'remote-meta',
         updatedAt: 400,
         uploadedAt: 800,
         downloadedAt: 850,
@@ -144,6 +147,7 @@ describe('bookFileRefresh', () => {
 
     expect(merged.title).toBe('Remote title');
     expect(merged.uploadedAt).toBe(800);
+    expect(merged.metaHash).toBe('remote-meta');
     expect(merged.downloadedAt).toBe(850);
     expect(merged.coverDownloadedAt).toBe(860);
     expect(merged.coverImageUrl).toBe('remote-cover-url');
