@@ -117,12 +117,13 @@ def main() -> int:
     parser.add_argument("--flatten", action="store_true", help="Upload all EPUBs directly under the remote prefix.")
     parser.add_argument("--mirror", action="store_true", help="Delete remote EPUBs under the prefix that are no longer matched locally.")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--allow-empty", action="store_true", help="Exit successfully when no EPUB files match.")
     args = parser.parse_args()
 
     epubs = expand_epubs(args.patterns)
     if not epubs:
         print("no EPUB files matched", file=sys.stderr)
-        return 1
+        return 0 if args.allow_empty else 1
 
     if args.dry_run:
         base_url = os.environ.get("WEBDAV_URL", "https://webdav.example.invalid").rstrip("/")
