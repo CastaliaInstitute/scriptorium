@@ -8,6 +8,7 @@ function usage() {
     "",
     "Options:",
     "  --expect-folder NAME          Require a top-level WebDAV folder. Repeatable.",
+    "  --ensure-folder NAME          Create a top-level WebDAV folder before checks. Repeatable.",
     "  --require-opds-entry TEXT     Require an OPDS entry title or acquisition href containing TEXT. Repeatable.",
     "  --help                       Show this help.",
     "",
@@ -22,6 +23,7 @@ export function parseArgs(argv, env = process.env) {
     username: env.READEST_WEBDAV_USERNAME || "",
     password: env.READEST_WEBDAV_PASSWORD || "",
     expectedFolders: [...DEFAULT_EXPECTED_FOLDERS],
+    ensuredFolders: [],
     requiredOpdsEntries: [],
     help: false,
   };
@@ -46,6 +48,9 @@ export function parseArgs(argv, env = process.env) {
         break;
       case "--expect-folder":
         options.expectedFolders.push(next());
+        break;
+      case "--ensure-folder":
+        options.ensuredFolders.push(next());
         break;
       case "--require-opds-entry":
         options.requiredOpdsEntries.push(next());
@@ -88,6 +93,14 @@ export async function runSmoke(options) {
   assertIncludes(davHeader, "1", "OPTIONS / DAV header");
   results.push("OPTIONS /");
 
+  let createdFolders = 0;
+  for (const folder of options.ensuredFolders) {
+    if (await ensureFolder(options.url, authHeaders, folder)) createdFolders += 1;
+  }
+  if (options.ensuredFolders.length > 0) {
+    results.push(`MKCOL (${createdFolders}/${options.ensuredFolders.length} folders created)`);
+  }
+
   const root = await fetch(`${options.url}/`, {
     method: "PROPFIND",
     headers: {
@@ -121,6 +134,30 @@ export async function runSmoke(options) {
   results.push("GET /opds");
 
   return results;
+}
+
+async function ensureFolder(baseUrl, authHeaders, folder) {
+  const folderUrl = `${baseUrl}/${folder.split("/").filter(Boolean).map(encodeURIComponent).join("/")}`;
+  const existing = await fetch(folderUrl, {
+    method: "PROPFIND",
+    headers: {
+      ...authHeaders,
+      Depth: "0",
+    },
+  });
+  if (existing.status === 207) return false;
+  if (existing.status !== 404) {
+    throw new Error(`PROPFIND /${folder} returned ${existing.status}; expected 207 or 404`);
+  }
+
+  const created = await fetch(folderUrl, {
+    method: "MKCOL",
+    headers: authHeaders,
+  });
+  if (created.status !== 201) {
+    throw new Error(`MKCOL /${folder} returned ${created.status}; expected 201`);
+  }
+  return true;
 }
 
 function assertStatus(response, expected, label) {

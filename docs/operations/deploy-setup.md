@@ -120,7 +120,10 @@ Manager inside the Actions runner, masks the password, and checks:
 - WebDAV `PROPFIND /`
 - `GET /opds`
 
-The default smoke check requires these root folders:
+The deploy workflow creates the configured root folders with `MKCOL` before it
+checks them. This keeps a fresh service deploy from failing before the first
+EPUB publish and proves the WebDAV endpoint is writable. The default smoke check
+requires these root folders:
 
 ```text
 Bibliotech
