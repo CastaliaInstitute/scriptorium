@@ -172,6 +172,12 @@ The current workflow uses:
 CastaliaInstitute/scriptorium/.github/workflows/sync-epubs-to-webdav.yml@main
 ```
 
+Bibliotech should preserve collection/category paths under `Bibliotech/` by
+default. Flattening is reserved for small curated sets where filename collisions
+and rights boundaries have already been reviewed. This keeps Gutenberg,
+research, and private working corpora separable in WebDAV, OPDS, and any later
+public promotion step.
+
 ### AtelierNymphet
 
 AtelierNymphet publishes:

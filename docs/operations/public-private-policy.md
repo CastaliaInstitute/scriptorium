@@ -40,6 +40,8 @@ working artifacts. Use these rules:
 
 - Public-domain EPUBs may be published under `Bibliotech/` for authenticated
   Readest sync.
+- Preserve collection/category paths under `Bibliotech/` unless a curated
+  release intentionally flattens a collision-free set.
 - A separate public bucket, GitHub Release, or Pages/OPDS surface should be used
   for open public distribution.
 - Restricted or uncertain-rights corpus files must not be copied to public
