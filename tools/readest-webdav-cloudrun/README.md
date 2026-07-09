@@ -12,12 +12,14 @@ Enable the services once:
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com secretmanager.googleapis.com
 ```
 
-Create Secret Manager secrets. Do not paste secret values into this repo:
+Create or update Secret Manager secrets. Do not paste secret values into this repo:
 
 ```sh
-printf '%s' "$SUPABASE_URL" | gcloud secrets create supabase-url --data-file=-
-printf '%s' "$SUPABASE_SERVICE_ROLE_KEY" | gcloud secrets create supabase-service-role-key --data-file=-
-printf '%s' "$WEBDAV_PASSWORD" | gcloud secrets create readest-webdav-password --data-file=-
+PROJECT_ID=institute-481516 \
+SUPABASE_URL="$SUPABASE_URL" \
+SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+WEBDAV_PASSWORD="$WEBDAV_PASSWORD" \
+scripts/bootstrap_gcp_secrets.sh
 ```
 
 Create a private Supabase Storage bucket named `readest`, or change `SUPABASE_STORAGE_BUCKET` during deploy.

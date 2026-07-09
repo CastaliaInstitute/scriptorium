@@ -20,12 +20,22 @@ gcloud services enable \
   secretmanager.googleapis.com
 ```
 
-Create or verify the Secret Manager entries consumed by Cloud Run:
+Create or update the Secret Manager entries consumed by Cloud Run:
 
 ```text
 supabase-url
 supabase-service-role-key
 readest-webdav-password
+```
+
+From `tools/readest-webdav-cloudrun`, bootstrap them idempotently:
+
+```sh
+PROJECT_ID=institute-481516 \
+SUPABASE_URL="$SUPABASE_URL" \
+SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+WEBDAV_PASSWORD="$WEBDAV_PASSWORD" \
+scripts/bootstrap_gcp_secrets.sh
 ```
 
 The service reads these secrets at runtime. Do not commit their values and do
