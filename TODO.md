@@ -123,6 +123,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Add helper to open GitHub PRs from accepted source-edit proposals.
 - [x] Install AtelierNymphet workflow to apply accepted Readest edit proposals.
 - [x] Rebuild EPUBs after accepted edits.
+- [x] Install AtelierNymphet workflow to republish EPUBs after accepted edit PRs merge.
 - [ ] Resync updated EPUBs and verify Readest auto-refresh.
 
 ## Phase 8: Release and Operations
