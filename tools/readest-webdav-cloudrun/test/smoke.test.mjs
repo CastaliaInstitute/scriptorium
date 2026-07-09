@@ -105,6 +105,33 @@ test("smoke verifier confirms health, root folders, and OPDS acquisition feed", 
   assert.match(result.stdout, /ok GET \/opds/);
 });
 
+test("smoke verifier can create expected root folders before checking them", async () => {
+  await authFetch("/La Recherche/Absinthe.epub", { method: "PUT", body: "epub" });
+
+  const result = await runSmoke([
+    "--url",
+    baseUrl,
+    "--username",
+    USERNAME,
+    "--password",
+    PASSWORD,
+    "--ensure-folder",
+    "La Recherche",
+    "--ensure-folder",
+    "Twenty Dollar Words",
+    "--expect-folder",
+    "La Recherche",
+    "--expect-folder",
+    "Twenty Dollar Words",
+    "--require-opds-entry",
+    "Absinthe",
+  ]);
+
+  assert.equal(result.code, 0, result.stderr);
+  assert.match(result.stdout, /ok MKCOL \(1\/2 folders created\)/);
+  assert.match(result.stdout, /ok PROPFIND \//);
+});
+
 test("smoke verifier fails when an expected root folder is missing", async () => {
   const result = await runSmoke([
     "--url",

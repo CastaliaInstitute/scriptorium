@@ -119,6 +119,7 @@ jobs:
           smoke_args=()
           while IFS= read -r folder; do
             [ -n "$folder" ] || continue
+            smoke_args+=(--ensure-folder "$folder")
             smoke_args+=(--expect-folder "$folder")
           done <<< "$SMOKE_EXPECTED_FOLDERS"
           while IFS= read -r entry; do
