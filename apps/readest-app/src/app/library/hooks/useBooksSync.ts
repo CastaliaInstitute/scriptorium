@@ -112,6 +112,39 @@ export const useBooksSync = () => {
     pullLibrary();
   }, [user, useSyncInited, libraryLoaded, pullLibrary]);
 
+  useEffect(() => {
+    if (!user || !useSyncInited || !libraryLoaded) return;
+
+    const pullIfVisible = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      pullLibrary();
+    };
+    const pullOnVisible = () => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      pullLibrary();
+    };
+
+    const intervalId = setInterval(pullIfVisible, SYNC_BOOKS_INTERVAL_SEC * 1000);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', pullIfVisible);
+      window.addEventListener('online', pullIfVisible);
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', pullOnVisible);
+    }
+
+    return () => {
+      clearInterval(intervalId);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', pullIfVisible);
+        window.removeEventListener('online', pullIfVisible);
+      }
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', pullOnVisible);
+      }
+    };
+  }, [user, useSyncInited, libraryLoaded, pullLibrary]);
+
   const updateLibrary = useCallback(async () => {
     if (!syncedBooks?.length) return;
 

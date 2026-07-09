@@ -64,8 +64,9 @@ Twenty Dollar Words
 ## Reader Behavior
 
 - Verify a Scriptorium Readest build can import or sync a newly published EPUB.
-- Verify an updated EPUB redownloads on full sync when `uploadedAt` or
-  `metaHash` changes.
+- Verify the library automatically pulls book changes while open, on focus
+  return, and after the device comes back online.
+- Verify an updated EPUB redownloads when `uploadedAt` or `metaHash` changes.
 - Verify cover art appears after refresh.
 - Verify deleted remote EPUBs do not remain because of local-only imports.
 
