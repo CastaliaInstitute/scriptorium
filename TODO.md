@@ -17,6 +17,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Move reusable Readest revision sync scripts into Scriptorium.
 - [x] Move Supabase-backed WebDAV Cloud Run service into Scriptorium.
 - [x] Add reusable `sync-epubs-to-webdav` workflow.
+- [x] Add reusable `sync-epubs-to-webdav` build hook for generated EPUBs.
 - [x] Add reusable `readest-comments-to-issues` workflow.
 - [x] Add `deploy-webdav-cloudrun` workflow.
 - [x] Document OPDS/WebDAV/Supabase integration.
@@ -49,7 +50,8 @@ OPDS and Supabase-backed WebDAV.
 - [x] Dry-run Bibliotech sync globs locally.
 - [x] Configure Bibliotech secrets:
   `READEST_WEBDAV_URL`, `READEST_WEBDAV_USERNAME`, `READEST_WEBDAV_PASSWORD`.
-- [ ] Run Bibliotech workflow in dry-run mode.
+- [x] Run Bibliotech workflow in dry-run mode.
+- [ ] Build Bibliotech EPUB artifacts inside the GitHub Action before WebDAV sync.
 - [ ] Run Bibliotech workflow live against WebDAV.
 - [ ] Confirm root WebDAV folder:
   `Bibliotech/`.
@@ -65,8 +67,10 @@ OPDS and Supabase-backed WebDAV.
 - [x] Dry-run Twenty Dollar Words sync globs locally.
 - [x] Configure or verify AtelierNymphet WebDAV secrets:
   `READEST_WEBDAV_URL`, `READEST_WEBDAV_USERNAME`, `READEST_WEBDAV_PASSWORD`.
-- [ ] Configure AtelierNymphet `GEMINI_API_KEY`.
-- [ ] Run AtelierNymphet workflow in dry-run mode.
+- [x] Configure AtelierNymphet `GEMINI_API_KEY`.
+- [x] Configure AtelierNymphet `SOURCE_REPO_TOKEN` for private source-map
+  sparse checkouts.
+- [x] Run AtelierNymphet workflow in dry-run mode.
 - [ ] Run AtelierNymphet workflow live against WebDAV.
 - [ ] Confirm root WebDAV folders:
   `La Recherche/`, `Twenty Dollar Words/`.

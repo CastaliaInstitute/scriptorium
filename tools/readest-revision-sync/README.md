@@ -27,6 +27,7 @@ jobs:
     uses: CastaliaInstitute/scriptorium/.github/workflows/sync-epubs-to-webdav.yml@main
     with:
       epub_globs: "output/epub/*.epub"
+      epub_build_command: "npm ci && npm run build:epub"
       remote_prefix: "La Recherche"
       flatten: true
       mirror: false
@@ -42,6 +43,11 @@ for `remote_prefix` (for example, `La Recherche` or `Twenty Dollar Words`).
 `mirror: true` removes remote EPUBs
 under `remote_prefix` that are no longer produced by the caller repository; use
 it for an aggregate sync repo or a dedicated per-book prefix.
+
+If EPUBs are generated artifacts, set `epub_build_command`. The command runs
+from the caller repository after checkout and before the WebDAV sync step, so
+the published set can be rebuilt repeatably in GitHub Actions without committing
+derived EPUB files.
 
 ### Readest Comments to Issues
 
