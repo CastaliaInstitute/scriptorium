@@ -123,11 +123,11 @@ OPDS and Supabase-backed WebDAV.
 
 ## Phase 8: Release and Operations
 
-- [ ] Document local dev setup for Scriptorium.
-- [ ] Document deploy setup for Cloud Run and GitHub Actions.
+- [x] Document local dev setup for Scriptorium.
+- [x] Document deploy setup for Cloud Run and GitHub Actions.
 - [x] Add smoke verifier for deployed WebDAV and OPDS.
 - [ ] Run smoke verifier against deployed WebDAV and OPDS.
-- [ ] Add a release checklist for Scriptorium reader builds.
+- [x] Add a release checklist for Scriptorium reader builds.
 - [x] Add a runbook for failed sync, missing covers, and deleted-book tombstones.
 - [ ] Decide public/private policy for Bibliotech, AtelierNymphet, and review artifacts.
 
