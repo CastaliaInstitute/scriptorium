@@ -56,7 +56,7 @@ OPDS and Supabase-backed WebDAV.
 - [ ] Confirm root WebDAV folder:
   `Bibliotech/`.
 - [ ] Confirm Bibliotech EPUBs appear in `/opds`.
-- [ ] Decide whether Bibliotech should preserve source paths or flatten by
+- [x] Decide whether Bibliotech should preserve source paths or flatten by
   collection/category.
 
 ## Phase 4: AtelierNymphet Publishing

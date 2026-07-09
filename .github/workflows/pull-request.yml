@@ -157,8 +157,20 @@ jobs:
           # both pinned to Lua 5.1 (LuaJIT-compatible). System-wide install
           # so `luarocks --lua-version=5.1 path` (sourced by
           # scripts/test-koplugin.mjs) picks them up.
-          sudo luarocks --lua-version=5.1 install busted
-          sudo luarocks --lua-version=5.1 install lsqlite3complete
+          luarocks_install() {
+            local package="$1"
+            for attempt in 1 2 3; do
+              if sudo luarocks --lua-version=5.1 install "$package"; then
+                return 0
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                return 1
+              fi
+              sleep $((attempt * 10))
+            done
+          }
+          luarocks_install busted
+          luarocks_install lsqlite3complete
 
       - name: cache playwright browsers
         id: playwright-cache
