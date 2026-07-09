@@ -123,6 +123,12 @@ links, La Recherche paths, Twenty Dollar Words paths, and ordinary URLs. Issue
 bodies and review packets render those references under
 `Footnote/Endnote Cross-References` or `Cross-References`.
 
+Each parsed reference includes `schema`, `kind`, `raw`, `target`, and
+`canonical_uri`. See
+[`docs/cross-reference-uri-schema.md`](../../docs/cross-reference-uri-schema.md)
+for the canonical `scriptorium://message/...` and `scriptorium://work/...`
+forms.
+
 ### Source Edit Proposals
 
 After annotation ingest, generate reviewable source-edit proposal artifacts from

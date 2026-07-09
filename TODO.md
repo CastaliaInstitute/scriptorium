@@ -98,7 +98,7 @@ OPDS and Supabase-backed WebDAV.
 
 ## Phase 6: Cross-References and Marginalia
 
-- [ ] Define canonical cross-reference URI schema.
+- [x] Define canonical cross-reference URI schema.
 - [x] Support datetime-stamped message/email references, for example:
   `facebook:daniel-du-kinque:2026.07.02.02:24`.
 - [x] Add parser for explicit cross-references in notes and marginalia.
