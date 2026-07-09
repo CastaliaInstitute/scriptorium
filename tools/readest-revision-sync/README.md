@@ -72,6 +72,9 @@ jobs:
       source_map: "output/rag/rag-ingest-manifest.jsonl"
       source_map_build_command: "python3 scripts/build_rag_ingest_manifest.py"
       issue_limit: 20
+      generate_edit_proposals: true
+      edit_proposals_use_ai: false
+      edit_proposal_limit: 20
       dry_run: false
     secrets:
       READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
@@ -136,6 +139,12 @@ With `GEMINI_API_KEY`, the script asks Gemini for a conservative unified diff.
 Without a key, or with `--no-ai`, it writes the exact source context and prompt
 as a manual-review proposal. The script never applies patches directly; accepted
 edits still need a reviewed source change and a rebuilt EPUB.
+
+The reusable comments workflow can run this after annotation mapping by setting
+`generate_edit_proposals: true`. It uploads the generated proposal directory as
+the `readest-edit-proposals` artifact. Keep `edit_proposals_use_ai: false` for
+manual-review prompt artifacts, or set it to `true` to ask Gemini for proposed
+unified diffs.
 
 ## Optional Variables
 

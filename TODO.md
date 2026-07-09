@@ -90,6 +90,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Run annotation workflow in dry-run mode.
 - [x] Confirm generated issues include:
   Readest deep links, source refs, highlight text, note text, and cross-reference links.
+- [x] Add reusable workflow hook to generate source-edit proposal artifacts.
 - [ ] Run annotation workflow live and create test issue.
 - [x] Add duplicate prevention tests around issue keys.
 - [ ] Decide whether issues land in source repos directly or in Scriptorium first.
@@ -113,6 +114,7 @@ OPDS and Supabase-backed WebDAV.
 - [ ] Define Codex document model.
 - [ ] Map Codex passages to repo source files.
 - [x] Generate patch proposal artifacts from mapped annotations.
+- [x] Upload patch proposal artifacts from the annotation workflow.
 - [ ] Gate patch proposals on accepted review annotations or issue state.
 - [ ] Open GitHub PRs from accepted review issues.
 - [ ] Rebuild EPUBs after accepted edits.
