@@ -82,6 +82,7 @@ OPDS and Supabase-backed WebDAV.
   `LaRecherche/output/rag/rag-ingest-manifest.jsonl`.
 - [x] Add reusable workflow hook to build generated source maps before Readest
   annotation ingest.
+- [x] Pass an optional source repository token to generated source-map builds.
 - [x] Run annotation workflow in dry-run mode.
 - [x] Confirm generated issues include:
   Readest deep links, source refs, highlight text, note text, and cross-reference links.
