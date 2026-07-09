@@ -27,25 +27,6 @@ jobs:
       accepted_keys: ${{ inputs.accepted_keys }}
       branch: ${{ inputs.branch }}
 
-# Pair this with a separate publish workflow in the caller repository:
-#
-# name: Publish EPUBs to Scriptorium
-# on:
-#   push:
-#     branches: [main]
-#   workflow_dispatch:
-#
-# jobs:
-#   publish:
-#     uses: CastaliaInstitute/scriptorium/.github/workflows/sync-epubs-to-webdav.yml@main
-#     with:
-#       epub_build_command: "npm ci && npm run build:epub"
-#       epub_globs: "output/epub/*.epub"
-#       remote_prefix: "La Recherche"
-#       flatten: true
-#       mirror: false
-#       dry_run: false
-#     secrets:
-#       READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
-#       READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
-#       READEST_WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}
+# Pair this with publish-after-accepted-edits.yml in the caller repository.
+# That workflow rebuilds EPUBs and syncs them to WebDAV when an accepted-edit PR
+# merges to main.
