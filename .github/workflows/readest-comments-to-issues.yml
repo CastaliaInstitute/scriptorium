@@ -183,6 +183,21 @@ jobs:
             "${ai_args[@]}" \
             "${limit_args[@]}"
 
+      - name: Generate cross-reference endnotes
+        working-directory: caller
+        run: |
+          set -euo pipefail
+          python3 ../scriptorium/tools/readest-revision-sync/scripts/generate_cross_reference_notes.py \
+            --input output/readest/readest-annotations.mapped.jsonl \
+            --out-dir .atelier/readest-cross-reference-notes
+
+      - name: Upload cross-reference endnotes
+        uses: actions/upload-artifact@v4
+        with:
+          name: readest-cross-reference-endnotes
+          path: caller/.atelier/readest-cross-reference-notes
+          if-no-files-found: warn
+
       - name: Upload source edit proposals
         if: ${{ inputs.generate_edit_proposals }}
         uses: actions/upload-artifact@v4
