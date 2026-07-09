@@ -30,6 +30,7 @@ def record(annotation_id: str, highlight_hash: str = "hash") -> dict:
         "match_confidence": "high",
         "highlight_text": "green hour",
         "reader_note": "compare facebook:daniel-du-kinque:2026.07.02.02:24",
+        "marginalia_layer": "faculty",
         "highlight_hash": highlight_hash,
         "readest": {
             "book_hash": "bookhash",
@@ -75,7 +76,7 @@ class ReviewIssueToolsTest(unittest.TestCase):
     def test_plan_review_issues_skips_seen_keys_and_honors_limit(self) -> None:
         records = [record("note-1"), record("note-2"), record("note-3")]
         seen = {issues.issue_key(records[0])}
-        created: list[tuple[str, str]] = []
+        created: list[tuple[str, str, list[str]]] = []
 
         def summarize(item: dict) -> dict[str, str]:
             return {
@@ -85,7 +86,7 @@ class ReviewIssueToolsTest(unittest.TestCase):
             }
 
         def create(title: str, body: str, labels: list[str], dry_run: bool) -> None:
-            created.append((title, body))
+            created.append((title, body, labels))
 
         count = issues.plan_review_issues(
             records=records,
@@ -103,6 +104,20 @@ class ReviewIssueToolsTest(unittest.TestCase):
         self.assertIn("<!-- readest-review-key: readest:bookhash:note-2:hash -->", created[0][1])
         self.assertIn("Repository source", created[0][1])
         self.assertIn("Source span: `10`-`42`", created[0][1])
+        self.assertIn("Marginalia layer: `faculty`", created[0][1])
+        self.assertEqual(created[0][2], ["readest-review", "marginalia-faculty"])
+
+    def test_issue_labels_include_marginalia_layer(self) -> None:
+        self.assertEqual(
+            issues.issue_labels(["readest-review", "ai-review"], record("note-1")),
+            ["readest-review", "ai-review", "marginalia-faculty"],
+        )
+        fallback = record("note-2")
+        fallback["marginalia_layer"] = "unknown"
+        self.assertEqual(
+            issues.issue_labels(["readest-review"], fallback),
+            ["readest-review", "marginalia-personal"],
+        )
 
     def test_cross_reference_parser_normalizes_supported_references(self) -> None:
         parsed = parse_cross_references(

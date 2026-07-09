@@ -128,6 +128,11 @@ ref, path, character span, content hash, canonical reference, fragment, and a
 GitHub source URL. This is the durable bridge from a Readest annotation/CFI to
 the repository source span used for issues and source-edit proposals.
 
+Annotations default to the `personal` marginalia layer. Add an explicit token
+such as `layer:faculty`, `[layer:public]`, or `layer:ai-review` in the reader
+note to route the record into another layer. Review issues include a
+`marginalia-<layer>` label in addition to the base review labels.
+
 Each parsed reference includes `schema`, `kind`, `raw`, `target`, and
 `canonical_uri`. See
 [`docs/cross-reference-uri-schema.md`](../../docs/cross-reference-uri-schema.md)

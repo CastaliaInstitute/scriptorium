@@ -23,6 +23,8 @@ DEFAULT_PACKET_DIR = LARECHERCHE_ROOT / ".atelier" / "readest-review"
 KNOWN_SCHEMA_VERSION = 3
 READEST_WEB_BASE = "https://web.readest.com"
 READEST_APP_SCHEME = "readest://"
+MARGINALIA_LAYERS = {"personal", "faculty", "public", "ai-review"}
+MARGINALIA_LAYER_RE = re.compile(r"(?:^|\s)\[?layer:(personal|faculty|public|ai-review)\]?", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -264,6 +266,7 @@ def normalized_record(
     entry = match.entry
     highlight_text = normalize_space(str(annotation.get("text") or ""))
     note = str(annotation.get("note") or "").strip()
+    marginalia_layer = detect_marginalia_layer(note)
     cross_references = parse_cross_references(f"{note} {highlight_text}")
     book_hash = str(book.get("hash") or annotation.get("bookHash") or "")
     annotation_id = str(annotation.get("id") or sha256_text(json.dumps(annotation, sort_keys=True))[:16])
@@ -294,6 +297,12 @@ def normalized_record(
         },
         "highlight_text": highlight_text,
         "reader_note": note,
+        "marginalia_layer": marginalia_layer,
+        "marginalia": {
+            "schema": "scriptorium.marginalia.v1",
+            "layer": marginalia_layer,
+            "kind": str(annotation.get("type") or "note"),
+        },
         "cross_references": cross_references,
         "highlight_hash": sha256_text(f"{book_hash}:{annotation_id}:{highlight_text}:{note}"),
     }
@@ -312,6 +321,14 @@ def normalized_record(
         record["source_hash"] = entry.content_hash
         record["source_link"] = source_link
     return record
+
+
+def detect_marginalia_layer(note: str | None) -> str:
+    match = MARGINALIA_LAYER_RE.search(str(note or ""))
+    if not match:
+        return "personal"
+    layer = match.group(1).lower()
+    return layer if layer in MARGINALIA_LAYERS else "personal"
 
 
 def build_source_link(entry: SourceMapEntry) -> dict[str, Any]:

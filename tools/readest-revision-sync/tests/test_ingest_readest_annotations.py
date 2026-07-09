@@ -105,6 +105,34 @@ class IngestReadestAnnotationsTest(unittest.TestCase):
             "https://github.com/AtelierNymphet/AtelierNymphet/blob/main/Absinthe/source/chapter%201.md",
         )
 
+    def test_normalized_record_detects_explicit_marginalia_layer(self) -> None:
+        normalized = ingest.normalized_record(
+            {"hash": "bookhash", "title": "Absinthe"},
+            {"schemaVersion": 3},
+            {
+                "id": "note-1",
+                "text": "The green hour",
+                "note": "[layer:faculty] compare this in seminar",
+                "type": "highlight",
+            },
+            ingest.MatchResult("quarantine", "none", "manual"),
+        )
+
+        self.assertEqual(normalized["marginalia_layer"], "faculty")
+        self.assertEqual(normalized["marginalia"]["schema"], "scriptorium.marginalia.v1")
+        self.assertEqual(normalized["marginalia"]["layer"], "faculty")
+        self.assertEqual(normalized["marginalia"]["kind"], "highlight")
+
+    def test_normalized_record_defaults_marginalia_layer_to_personal(self) -> None:
+        normalized = ingest.normalized_record(
+            {"hash": "bookhash", "title": "Absinthe"},
+            {"schemaVersion": 3},
+            {"id": "note-1", "text": "The green hour", "note": "ordinary note"},
+            ingest.MatchResult("quarantine", "none", "manual"),
+        )
+
+        self.assertEqual(normalized["marginalia_layer"], "personal")
+
 
 if __name__ == "__main__":
     unittest.main()
