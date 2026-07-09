@@ -85,7 +85,9 @@ gh workflow run deploy-webdav-cloudrun.yml \
   -f region=us-west1 \
   -f storage_backend=supabase \
   -f storage_bucket=readest \
-  -f webdav_root_prefix=
+  -f webdav_root_prefix= \
+  -f webdav_hide_legacy_root_folder=true \
+  -f run_smoke=true
 ```
 
 The workflow runs `tools/readest-webdav-cloudrun/deploy.sh`, which deploys with:
@@ -96,9 +98,42 @@ The workflow runs `tools/readest-webdav-cloudrun/deploy.sh`, which deploys with:
 - Basic Auth enforced inside the WebDAV service
 - Secret Manager bindings for Supabase and WebDAV credentials
 
+Optional layout inputs:
+
+- `webdav_root_prefix`: storage prefix exposed as the WebDAV root.
+- `webdav_hide_legacy_root_folder`: hides the old top-level `Readest/` folder
+  while migrating to root-level series folders.
+- `webdav_legacy_top_level_prefix`: temporarily hides non-legacy children while
+  a specific legacy prefix is being cleaned up.
+- `webdav_virtual_root_aliases`: exposes friendly root folders before storage is
+  fully migrated, for example
+  `La Recherche=Readest/Readest;Twenty Dollar Words=Readest`.
+
 ## Verify Deployment
 
-After deploy, run:
+By default, the deploy workflow runs the smoke verifier automatically. It
+resolves the deployed Cloud Run URL, reads `readest-webdav-password` from Secret
+Manager inside the Actions runner, masks the password, and checks:
+
+- `GET /healthz`
+- WebDAV `OPTIONS /`
+- WebDAV `PROPFIND /`
+- `GET /opds`
+
+The default smoke check requires these root folders:
+
+```text
+Bibliotech
+La Recherche
+Twenty Dollar Words
+```
+
+Override `smoke_expected_folders` with a newline-separated list when testing a
+temporary layout. Once EPUBs have been published, pass
+`smoke_required_opds_entries` with one or more newline-separated title or href
+substrings, such as `Absinthe`.
+
+You can also run the same verifier locally after deploy:
 
 ```sh
 cd tools/readest-webdav-cloudrun
@@ -110,8 +145,6 @@ npm run smoke -- \
   --expect-folder "La Recherche" \
   --expect-folder "Twenty Dollar Words"
 ```
-
-Once EPUBs have been published, add one or more OPDS acquisition checks:
 
 ```sh
 npm run smoke -- \

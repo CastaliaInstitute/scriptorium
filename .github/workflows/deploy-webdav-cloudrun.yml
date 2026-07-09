@@ -23,6 +23,35 @@ on:
         description: "Storage prefix exposed as WebDAV root"
         required: false
         default: ""
+      webdav_hide_legacy_root_folder:
+        description: "Hide legacy top-level Readest folder from root listings"
+        required: false
+        type: boolean
+        default: true
+      webdav_legacy_top_level_prefix:
+        description: "Optional legacy prefix to hide while migrating old layouts"
+        required: false
+        default: ""
+      webdav_virtual_root_aliases:
+        description: "Optional virtual root aliases, for example: La Recherche=Readest/Readest;Twenty Dollar Words=Readest"
+        required: false
+        default: ""
+      run_smoke:
+        description: "Run deployed WebDAV/OPDS smoke checks after deploy"
+        required: false
+        type: boolean
+        default: true
+      smoke_expected_folders:
+        description: "Newline-separated root folders required by the smoke verifier"
+        required: false
+        default: |
+          Bibliotech
+          La Recherche
+          Twenty Dollar Words
+      smoke_required_opds_entries:
+        description: "Optional newline-separated OPDS title or href substrings required by the smoke verifier"
+        required: false
+        default: ""
 
 jobs:
   deploy:
@@ -40,6 +69,11 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
+      - uses: actions/setup-node@v4
+        if: ${{ inputs.run_smoke }}
+        with:
+          node-version: "20"
+
       - name: Deploy Cloud Run WebDAV
         working-directory: tools/readest-webdav-cloudrun
         env:
@@ -49,5 +83,46 @@ jobs:
           SUPABASE_STORAGE_BUCKET: ${{ inputs.storage_bucket }}
           WEBDAV_ROOT_PREFIX: ${{ inputs.webdav_root_prefix }}
           WEBDAV_USERNAME: ${{ vars.READEST_WEBDAV_USERNAME || 'readest' }}
-          WEBDAV_HIDE_LEGACY_ROOT_FOLDER: "true"
+          WEBDAV_HIDE_LEGACY_ROOT_FOLDER: ${{ inputs.webdav_hide_legacy_root_folder && 'true' || 'false' }}
+          WEBDAV_LEGACY_TOP_LEVEL_PREFIX: ${{ inputs.webdav_legacy_top_level_prefix }}
+          WEBDAV_VIRTUAL_ROOT_ALIASES: ${{ inputs.webdav_virtual_root_aliases }}
         run: ./deploy.sh
+
+      - name: Resolve deployed smoke credentials
+        if: ${{ inputs.run_smoke }}
+        env:
+          SERVICE_NAME: ${{ inputs.service_name }}
+          REGION: ${{ inputs.region }}
+          WEBDAV_USERNAME: ${{ vars.READEST_WEBDAV_USERNAME || 'readest' }}
+        run: |
+          set -euo pipefail
+          deployed_url="$(gcloud run services describe "$SERVICE_NAME" \
+            --region "$REGION" \
+            --format='value(status.url)')"
+          webdav_password="$(gcloud secrets versions access latest --secret=readest-webdav-password)"
+          echo "::add-mask::$webdav_password"
+          {
+            echo "READEST_WEBDAV_URL=$deployed_url"
+            echo "READEST_WEBDAV_USERNAME=$WEBDAV_USERNAME"
+            echo "READEST_WEBDAV_PASSWORD=$webdav_password"
+          } >> "$GITHUB_ENV"
+
+      - name: Smoke test deployed WebDAV and OPDS
+        if: ${{ inputs.run_smoke }}
+        working-directory: tools/readest-webdav-cloudrun
+        env:
+          SMOKE_EXPECTED_FOLDERS: ${{ inputs.smoke_expected_folders }}
+          SMOKE_REQUIRED_OPDS_ENTRIES: ${{ inputs.smoke_required_opds_entries }}
+        run: |
+          set -euo pipefail
+          npm ci
+          smoke_args=()
+          while IFS= read -r folder; do
+            [ -n "$folder" ] || continue
+            smoke_args+=(--expect-folder "$folder")
+          done <<< "$SMOKE_EXPECTED_FOLDERS"
+          while IFS= read -r entry; do
+            [ -n "$entry" ] || continue
+            smoke_args+=(--require-opds-entry "$entry")
+          done <<< "$SMOKE_REQUIRED_OPDS_ENTRIES"
+          node scripts/smoke_webdav_opds.mjs "${smoke_args[@]}"
