@@ -22,7 +22,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Document OPDS/WebDAV/Supabase integration.
 - [x] Validate Python scripts compile.
 - [x] Validate WebDAV service tests pass in in-memory mode.
-- [ ] Push Scriptorium branch and open PR.
+- [x] Push Scriptorium branch and open PR.
 - [ ] Configure required GitHub secrets on Scriptorium:
   `GCP_SERVICE_ACCOUNT_JSON`.
 - [ ] Configure required Google Secret Manager secrets:
@@ -47,7 +47,7 @@ OPDS and Supabase-backed WebDAV.
 
 - [x] Add Bibliotech caller workflow for Scriptorium WebDAV sync.
 - [x] Dry-run Bibliotech sync globs locally.
-- [ ] Configure Bibliotech secrets:
+- [x] Configure Bibliotech secrets:
   `READEST_WEBDAV_URL`, `READEST_WEBDAV_USERNAME`, `READEST_WEBDAV_PASSWORD`.
 - [ ] Run Bibliotech workflow in dry-run mode.
 - [ ] Run Bibliotech workflow live against WebDAV.
@@ -63,9 +63,9 @@ OPDS and Supabase-backed WebDAV.
 - [x] Allowlist the new workflow in AtelierNymphet `.gitignore`.
 - [x] Dry-run La Recherche sync globs locally.
 - [x] Dry-run Twenty Dollar Words sync globs locally.
-- [ ] Configure or verify AtelierNymphet secrets:
-  `READEST_WEBDAV_URL`, `READEST_WEBDAV_USERNAME`, `READEST_WEBDAV_PASSWORD`,
-  `GEMINI_API_KEY`.
+- [x] Configure or verify AtelierNymphet WebDAV secrets:
+  `READEST_WEBDAV_URL`, `READEST_WEBDAV_USERNAME`, `READEST_WEBDAV_PASSWORD`.
+- [ ] Configure AtelierNymphet `GEMINI_API_KEY`.
 - [ ] Run AtelierNymphet workflow in dry-run mode.
 - [ ] Run AtelierNymphet workflow live against WebDAV.
 - [ ] Confirm root WebDAV folders:
