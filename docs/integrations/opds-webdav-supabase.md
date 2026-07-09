@@ -118,3 +118,11 @@ to devices after sync instead of requiring manual delete/reimport.
 Use [Readest Sync Operations Runbook](../operations/readest-sync-runbook.md)
 for live checks, missing-book diagnostics, missing or stale covers, deleted-book
 tombstones, legacy layout cleanup, and the accepted-edit rebuild loop.
+
+Use [Scriptorium Deploy Setup](../operations/deploy-setup.md) for Cloud Run,
+Secret Manager, Supabase, and caller workflow wiring. Use
+[Scriptorium Release Checklist](../operations/release-checklist.md) before
+publishing reader builds or changing shared sync infrastructure.
+
+Use [Scriptorium Local Dev Setup](../operations/local-dev-setup.md) for local
+Readest, WebDAV, and revision-tool verification.
