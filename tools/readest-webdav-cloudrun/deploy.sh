@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SERVICE_NAME="${SERVICE_NAME:-readest-webdav}"
+PROJECT_ID="${PROJECT_ID:-}"
 REGION="${REGION:-us-west1}"
 SUPABASE_STORAGE_BUCKET="${SUPABASE_STORAGE_BUCKET:-readest}"
 STORAGE_BACKEND="${STORAGE_BACKEND:-supabase}"
@@ -11,7 +12,13 @@ WEBDAV_HIDE_LEGACY_ROOT_FOLDER="${WEBDAV_HIDE_LEGACY_ROOT_FOLDER:-true}"
 WEBDAV_LEGACY_TOP_LEVEL_PREFIX="${WEBDAV_LEGACY_TOP_LEVEL_PREFIX:-}"
 WEBDAV_VIRTUAL_ROOT_ALIASES="${WEBDAV_VIRTUAL_ROOT_ALIASES:-}"
 
+project_args=()
+if [ -n "$PROJECT_ID" ]; then
+  project_args+=(--project "$PROJECT_ID")
+fi
+
 gcloud run deploy "$SERVICE_NAME" \
+  "${project_args[@]}" \
   --source . \
   --region "$REGION" \
   --min-instances 0 \

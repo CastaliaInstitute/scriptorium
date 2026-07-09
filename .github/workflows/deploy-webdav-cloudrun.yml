@@ -7,6 +7,10 @@ on:
         description: "Cloud Run service name"
         required: false
         default: "readest-webdav"
+      project_id:
+        description: "Google Cloud project ID. Leave blank to use the project in GCP_SERVICE_ACCOUNT_JSON."
+        required: false
+        default: ""
       region:
         description: "Cloud Run region"
         required: false
@@ -74,9 +78,17 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Preflight GCP deploy prerequisites
+        env:
+          PROJECT_ID: ${{ inputs.project_id }}
+          SERVICE_NAME: ${{ inputs.service_name }}
+          REGION: ${{ inputs.region }}
+        run: tools/readest-webdav-cloudrun/scripts/preflight_gcp_deploy.sh
+
       - name: Deploy Cloud Run WebDAV
         working-directory: tools/readest-webdav-cloudrun
         env:
+          PROJECT_ID: ${{ inputs.project_id }}
           SERVICE_NAME: ${{ inputs.service_name }}
           REGION: ${{ inputs.region }}
           STORAGE_BACKEND: ${{ inputs.storage_backend }}
@@ -91,15 +103,21 @@ jobs:
       - name: Resolve deployed smoke credentials
         if: ${{ inputs.run_smoke }}
         env:
+          PROJECT_ID: ${{ inputs.project_id }}
           SERVICE_NAME: ${{ inputs.service_name }}
           REGION: ${{ inputs.region }}
           WEBDAV_USERNAME: ${{ vars.READEST_WEBDAV_USERNAME || 'readest' }}
         run: |
           set -euo pipefail
+          project_args=()
+          if [ -n "$PROJECT_ID" ]; then
+            project_args+=(--project "$PROJECT_ID")
+          fi
           deployed_url="$(gcloud run services describe "$SERVICE_NAME" \
+            "${project_args[@]}" \
             --region "$REGION" \
             --format='value(status.url)')"
-          webdav_password="$(gcloud secrets versions access latest --secret=readest-webdav-password)"
+          webdav_password="$(gcloud secrets versions access latest --secret=readest-webdav-password "${project_args[@]}")"
           echo "::add-mask::$webdav_password"
           {
             echo "READEST_WEBDAV_URL=$deployed_url"

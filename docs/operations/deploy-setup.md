@@ -89,6 +89,7 @@ gh workflow run deploy-webdav-cloudrun.yml \
   --repo CastaliaInstitute/scriptorium \
   --ref main \
   -f service_name=readest-webdav \
+  -f project_id=institute-481516 \
   -f region=us-west1 \
   -f storage_backend=supabase \
   -f storage_bucket=readest \
@@ -105,8 +106,17 @@ The workflow runs `tools/readest-webdav-cloudrun/deploy.sh`, which deploys with:
 - Basic Auth enforced inside the WebDAV service
 - Secret Manager bindings for Supabase and WebDAV credentials
 
+Before deployment, the workflow runs
+`tools/readest-webdav-cloudrun/scripts/preflight_gcp_deploy.sh`. The preflight
+fails early if the configured account cannot access the project, required APIs
+are disabled, required Secret Manager entries are missing, latest secret
+versions cannot be read, or Cloud Run services cannot be listed in the target
+region.
+
 Optional layout inputs:
 
+- `project_id`: target Google Cloud project. Leave blank to use the project
+  embedded in `GCP_SERVICE_ACCOUNT_JSON`.
 - `webdav_root_prefix`: storage prefix exposed as the WebDAV root.
 - `webdav_hide_legacy_root_folder`: hides the old top-level `Readest/` folder
   while migrating to root-level series folders.
