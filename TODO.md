@@ -37,8 +37,8 @@ OPDS and Supabase-backed WebDAV.
 - [x] Redownload existing synced EPUBs when remote `uploadedAt` is newer.
 - [x] Redownload existing synced EPUBs when remote `metaHash` changes.
 - [x] Preserve local `downloadedAt`, `coverDownloadedAt`, and `coverImageUrl` after refresh.
-- [ ] Install Scriptorium monorepo dependencies.
-- [ ] Run Readest app lint/typecheck/test suite.
+- [x] Install Scriptorium monorepo dependencies.
+- [x] Run Readest app lint/typecheck/test suite.
 - [x] Run focused `bookFileRefresh` unit test.
 - [ ] Run local web Readest and verify sync refresh with a changed EPUB.
 - [ ] Verify mobile behavior after a changed `Absinthe.epub` syncs.

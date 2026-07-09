@@ -29,6 +29,32 @@ pnpm --filter @readest/readest-app setup-vendors
 `setup-vendors` is required before broad app tests because generated/vendor
 assets such as PDF.js, SimpleCC, and WASM files are expected by the app.
 
+If the global Corepack `pnpm` shim fails under Node 26 with
+`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`, use the cached pnpm ESM launcher
+directly:
+
+```sh
+node ~/.cache/node/corepack/pnpm/11.1.1/bin/pnpm.mjs install --frozen-lockfile
+node ~/.cache/node/corepack/pnpm/11.1.1/bin/pnpm.mjs --filter @readest/readest-app setup-vendors
+```
+
+For nested scripts that call `pnpm`, put a temporary symlink to the ESM launcher
+first on `PATH`:
+
+```sh
+mkdir -p /tmp/pnpm-direct
+ln -sf ~/.cache/node/corepack/pnpm/11.1.1/bin/pnpm.mjs /tmp/pnpm-direct/pnpm
+PATH="/tmp/pnpm-direct:$PATH" \
+  node ~/.cache/node/corepack/pnpm/11.1.1/bin/pnpm.mjs --filter @readest/readest-app setup-vendors
+```
+
+Lua lint requires LuaJIT locally:
+
+```sh
+brew install luajit
+node apps/readest.koplugin/scripts/lint-koplugin.mjs
+```
+
 ## Readest Web App
 
 ```sh
