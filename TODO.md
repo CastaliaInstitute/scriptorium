@@ -130,6 +130,8 @@ OPDS and Supabase-backed WebDAV.
 - [x] Install AtelierNymphet workflow to apply accepted Readest edit proposals.
 - [x] Rebuild EPUBs after accepted edits.
 - [x] Install AtelierNymphet workflow to republish EPUBs after accepted edit PRs merge.
+- [x] Merge Scriptorium support for applying accepted edit proposals across
+  cloned source repositories.
 - [ ] Resync updated EPUBs and verify Readest auto-refresh.
 
 ## Phase 8: Release and Operations
@@ -146,7 +148,8 @@ OPDS and Supabase-backed WebDAV.
 
 ## Current Completion Criteria
 
-- Scriptorium source branch merged.
+- Scriptorium source branch merged. Done via PR #44:
+  `Apply accepted Readest edits to source repos`.
 - WebDAV deployed from Scriptorium and serving OPDS.
 - Bibliotech and AtelierNymphet can publish EPUBs through reusable workflows.
 - Readest fork redownloads changed EPUBs on sync.
