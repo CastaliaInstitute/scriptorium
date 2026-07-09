@@ -193,6 +193,11 @@ CastaliaInstitute/scriptorium/.github/workflows/readest-comments-to-issues.yml@m
 It downloads Readest sync JSON, maps annotations to source passages, summarizes
 with Gemini, and creates GitHub issues.
 
+Annotation issues are created in the caller repository by default. For
+AtelierNymphet, that means review issues land with the private manuscript source
+and source maps. Scriptorium owns the reusable tooling, not the review issue
+queue, unless a caller explicitly chooses to aggregate issues here.
+
 The same mapped annotation records can feed
 `propose_readest_source_edits.py`, which creates reviewable proposal artifacts
 under `.atelier/readest-edit-proposals`. Those artifacts may contain a Gemini
@@ -248,7 +253,5 @@ public distribution requires explicit promotion to a separate public surface.
 
 ## Open Questions
 
-- Should annotation issues be created in source repos directly, or aggregated in
-  Scriptorium first and dispatched later?
 - What is the first manuscript editing surface: inline EPUB annotation editing,
   Markdown-backed editor, or Codex document editor?
