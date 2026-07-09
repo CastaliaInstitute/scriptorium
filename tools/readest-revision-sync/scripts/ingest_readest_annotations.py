@@ -92,7 +92,12 @@ def epoch_ms_to_iso(value: Any) -> str | None:
     return datetime.fromtimestamp(seconds, tz=UTC).isoformat()
 
 
-def load_source_map(path: Path) -> list[SourceMapEntry]:
+def load_source_map(path: Path, allow_empty: bool = False) -> list[SourceMapEntry]:
+    if not path.exists():
+        if allow_empty:
+            return []
+        raise SystemExit(f"source map not found: {path}")
+
     entries: list[SourceMapEntry] = []
     for payload in iter_jsonl(path) or []:
         document = payload.get("document") or {}
@@ -114,7 +119,10 @@ def load_source_map(path: Path) -> list[SourceMapEntry]:
                 content_hash=sha256_text(content),
             )
         )
-    return [entry for entry in entries if entry.canonical_ref]
+    entries = [entry for entry in entries if entry.canonical_ref]
+    if not entries and not allow_empty:
+        raise SystemExit(f"source map has no canonical entries: {path}")
+    return entries
 
 
 def as_int(value: Any) -> int | None:
@@ -433,11 +441,12 @@ def main() -> int:
     parser.add_argument("--packet-dir", type=Path, default=DEFAULT_PACKET_DIR)
     parser.add_argument("--work-slug", help="Restrict mapping to one canonical work slug.")
     parser.add_argument("--include-deleted", action="store_true")
+    parser.add_argument("--allow-empty-source-map", action="store_true", help="Permit missing or empty source maps; annotations will be quarantined.")
     parser.add_argument("--no-review-packets", action="store_true")
     parser.add_argument("--context-radius", type=int, default=1600)
     args = parser.parse_args()
 
-    source_map = load_source_map(args.source_map)
+    source_map = load_source_map(args.source_map, allow_empty=args.allow_empty_source_map)
     books = load_readest_books(args.readest_dir, args.include_deleted)
 
     records: list[dict[str, Any]] = []
