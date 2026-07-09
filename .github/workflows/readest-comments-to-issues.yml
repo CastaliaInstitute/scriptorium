@@ -28,6 +28,21 @@ on:
         required: false
         type: number
         default: 20
+      generate_edit_proposals:
+        description: "Generate source-edit proposal artifacts from mapped annotations"
+        required: false
+        type: boolean
+        default: false
+      edit_proposals_use_ai:
+        description: "Use Gemini for source-edit proposals instead of manual-review prompts"
+        required: false
+        type: boolean
+        default: false
+      edit_proposal_limit:
+        description: "Maximum edit proposals to generate; 0 means all mapped annotations"
+        required: false
+        type: number
+        default: 0
       dry_run:
         description: "Print issue payloads without creating GitHub issues"
         required: false
@@ -66,6 +81,20 @@ on:
         description: "Maximum issues to create"
         required: false
         default: "20"
+      generate_edit_proposals:
+        description: "Generate source-edit proposal artifacts from mapped annotations"
+        required: false
+        type: boolean
+        default: false
+      edit_proposals_use_ai:
+        description: "Use Gemini for source-edit proposals instead of manual-review prompts"
+        required: false
+        type: boolean
+        default: false
+      edit_proposal_limit:
+        description: "Maximum edit proposals to generate; 0 means all mapped annotations"
+        required: false
+        default: "0"
       dry_run:
         description: "Print issue payloads without creating GitHub issues"
         required: false
@@ -130,6 +159,37 @@ jobs:
             --out-dir output/readest \
             --packet-dir .atelier/readest-review \
             "${work_slug_args[@]}"
+
+      - name: Generate source edit proposals
+        if: ${{ inputs.generate_edit_proposals }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_READEST_EDIT_MODEL: ${{ vars.GEMINI_READEST_EDIT_MODEL || 'gemini-3.5-flash' }}
+        working-directory: caller
+        run: |
+          set -euo pipefail
+          ai_args=(--no-ai)
+          if [ "${{ inputs.edit_proposals_use_ai }}" = "true" ]; then
+            ai_args=()
+          fi
+          limit_args=()
+          if [ "${{ inputs.edit_proposal_limit }}" != "0" ]; then
+            limit_args+=(--limit "${{ inputs.edit_proposal_limit }}")
+          fi
+          python3 ../scriptorium/tools/readest-revision-sync/scripts/propose_readest_source_edits.py \
+            --input output/readest/readest-annotations.mapped.jsonl \
+            --workspace-root .. \
+            --out-dir .atelier/readest-edit-proposals \
+            "${ai_args[@]}" \
+            "${limit_args[@]}"
+
+      - name: Upload source edit proposals
+        if: ${{ inputs.generate_edit_proposals }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: readest-edit-proposals
+          path: caller/.atelier/readest-edit-proposals
+          if-no-files-found: warn
 
       - name: Create GitHub issues
         env:

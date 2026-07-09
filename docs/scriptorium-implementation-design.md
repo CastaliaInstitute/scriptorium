@@ -189,7 +189,9 @@ under `.atelier/readest-edit-proposals`. Those artifacts may contain a Gemini
 unified diff when credentials are available, or a manual-review prompt and
 source context when AI proposal generation is disabled. The proposal step does
 not apply patches automatically; it is the bridge between marginalia review and
-a later source PR.
+a later source PR. The reusable annotation workflow can generate these artifacts
+with `generate_edit_proposals: true` and upload them as the
+`readest-edit-proposals` Actions artifact.
 
 ## Security
 
