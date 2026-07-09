@@ -96,6 +96,13 @@ from either `<hash>/config.json` or `books/<hash>/config.json`. If the source
 map is missing, annotations are still normalized and quarantined for manual
 review instead of being mapped to repository source context.
 
+Ingested annotations also include a durable `cross_references` array extracted
+from highlight/note text. The parser preserves datetime-stamped external
+anchors such as `facebook:daniel-du-kinque:2026.07.02.02:24`, Readest deep
+links, La Recherche paths, Twenty Dollar Words paths, and ordinary URLs. Issue
+bodies and review packets render those references under
+`Footnote/Endnote Cross-References` or `Cross-References`.
+
 ## Optional Variables
 
 ```text

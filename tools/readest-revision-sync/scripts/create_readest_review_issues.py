@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import subprocess
 import textwrap
 import urllib.error
@@ -12,6 +11,12 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+from readest_cross_references import (
+    markdown_reference_link,
+    parse_cross_references,
+    references_as_prompt_payload,
+)
 
 
 DEFAULT_INPUT = Path("output/readest/readest-annotations.mapped.jsonl")
@@ -81,15 +86,7 @@ def gemini_summary(record: dict[str, Any], model: str) -> dict[str, str]:
             "highlight_text": record.get("highlight_text"),
             "reader_note": record.get("reader_note"),
             "match_confidence": record.get("match_confidence"),
-            "reference_links": discover_reference_links(
-                "".join(
-                    [
-                        str(record.get("reader_note") or ""),
-                        " ",
-                        str(record.get("highlight_text") or ""),
-                    ]
-                )
-            ),
+            "cross_references": references_as_prompt_payload(record_cross_references(record)),
         },
     }
     schema = {
@@ -159,20 +156,18 @@ def fallback_title(record: dict[str, Any]) -> str:
     return f"Readest review: {work}: {note[:48]}"
 
 
-def discover_reference_links(text: str | None) -> list[str]:
-    value = str(text or "").strip()
-    if not value:
-        return []
-
-    urls: set[str] = set()
-    explicit_urls = re.findall(r"https?://[^\s\]\)\"'<>`]+", value)
-    for link in explicit_urls:
-        urls.add(link.rstrip(".,;)\"']"))
-
-    for match in re.finditer(r"\blarecherche/[^\s\]\)\"'<>`]+", value, flags=re.IGNORECASE):
-        urls.add(f"https://ateliernymphet.com/{match.group(0).rstrip('.,;)\"\'')}")
-
-    return sorted(urls)
+def record_cross_references(record: dict[str, Any]) -> list[dict[str, Any]]:
+    references = record.get("cross_references")
+    if isinstance(references, list):
+        return [reference for reference in references if isinstance(reference, dict)]
+    return parse_cross_references(
+        " ".join(
+            [
+                str(record.get("reader_note") or ""),
+                str(record.get("highlight_text") or ""),
+            ]
+        )
+    )
 
 
 def canonical_nav_links(canonical_ref: str | None) -> list[tuple[str, str]]:
@@ -240,14 +235,10 @@ def issue_body(record: dict[str, Any], summary: dict[str, str], key: str) -> str
         if link:
             source_links.append(f"- {label}: [{link}]({link})")
 
-    reference_links = discover_reference_links(" ".join([
-        str(record.get("reader_note") or ""),
-        " ",
-        str(record.get("highlight_text") or ""),
-    ]))
+    cross_references = record_cross_references(record)
     reference_links_block = (
-        "\n".join(f"- [{link}]({link})" for link in reference_links)
-        if reference_links
+        "\n".join(markdown_reference_link(reference) for reference in cross_references)
+        if cross_references
         else "- _No explicit external references found in this note."
     )
 

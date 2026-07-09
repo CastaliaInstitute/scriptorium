@@ -12,6 +12,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Iterable
 
+from readest_cross_references import markdown_reference_link, parse_cross_references
+
 
 LARECHERCHE_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = Path(os.environ["ATELIER_WORKSPACE_ROOT"]).resolve() if os.environ.get("ATELIER_WORKSPACE_ROOT") else LARECHERCHE_ROOT.parent
@@ -254,6 +256,7 @@ def normalized_record(
     entry = match.entry
     highlight_text = normalize_space(str(annotation.get("text") or ""))
     note = str(annotation.get("note") or "").strip()
+    cross_references = parse_cross_references(f"{note} {highlight_text}")
     book_hash = str(book.get("hash") or annotation.get("bookHash") or "")
     annotation_id = str(annotation.get("id") or sha256_text(json.dumps(annotation, sort_keys=True))[:16])
     cfi = str(annotation.get("cfi") or None)
@@ -283,6 +286,7 @@ def normalized_record(
         },
         "highlight_text": highlight_text,
         "reader_note": note,
+        "cross_references": cross_references,
         "highlight_hash": sha256_text(f"{book_hash}:{annotation_id}:{highlight_text}:{note}"),
     }
 
@@ -383,6 +387,10 @@ def render_review_packet(record: dict[str, Any], context: str) -> str:
         "",
         str(record.get("reader_note") or "_No note._"),
         "",
+        "## Cross-References",
+        "",
+        render_cross_references(record.get("cross_references")),
+        "",
         "## Source Context",
         "",
         "```text",
@@ -399,6 +407,16 @@ def render_review_packet(record: dict[str, Any], context: str) -> str:
         "",
     ]
     return "\n".join(lines)
+
+
+def render_cross_references(cross_references: Any) -> str:
+    if not isinstance(cross_references, list) or not cross_references:
+        return "_No explicit cross-references._"
+    return "\n".join(
+        markdown_reference_link(reference)
+        for reference in cross_references
+        if isinstance(reference, dict)
+    )
 
 
 def blockquote(value: str) -> str:
