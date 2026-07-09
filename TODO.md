@@ -116,8 +116,8 @@ OPDS and Supabase-backed WebDAV.
 - [ ] Map Codex passages to repo source files.
 - [x] Generate patch proposal artifacts from mapped annotations.
 - [x] Upload patch proposal artifacts from the annotation workflow.
-- [ ] Gate patch proposals on accepted review annotations or issue state.
-- [ ] Open GitHub PRs from accepted review issues.
+- [x] Gate patch proposals on explicit accepted proposal keys.
+- [x] Add helper to open GitHub PRs from accepted source-edit proposals.
 - [ ] Rebuild EPUBs after accepted edits.
 - [ ] Resync updated EPUBs and verify Readest auto-refresh.
 
