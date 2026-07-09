@@ -129,11 +129,10 @@ def load_readest_books(readest_dir: Path, include_deleted: bool) -> list[dict[st
         raise SystemExit(f"library.json not found at {library_path}")
     readest_data_dir = library_path.parent
     library = load_json(library_path)
-    if not isinstance(library, list):
-        raise SystemExit(f"{library_path} is not a JSON array; Readest format may have changed")
+    raw_books = readest_library_books(library, library_path)
 
     books: list[dict[str, Any]] = []
-    for raw_book in library:
+    for raw_book in raw_books:
         if not isinstance(raw_book, dict):
             continue
         if raw_book.get("deletedAt") is not None and not include_deleted:
@@ -141,12 +140,35 @@ def load_readest_books(readest_dir: Path, include_deleted: bool) -> list[dict[st
         book_hash = raw_book.get("hash")
         if not isinstance(book_hash, str) or not book_hash:
             continue
-        config_path = readest_data_dir / book_hash / "config.json"
+        config_path = find_book_config(readest_data_dir, book_hash)
         config = load_json(config_path) if config_path.exists() else {}
         if not isinstance(config, dict):
             config = {}
         books.append({"book": raw_book, "config": config, "config_path": config_path.as_posix()})
     return books
+
+
+def readest_library_books(library: Any, library_path: Path) -> list[Any]:
+    if isinstance(library, list):
+        return library
+    if isinstance(library, dict):
+        books = library.get("books")
+        if isinstance(books, list):
+            return books
+        legacy_books = library.get("library")
+        if isinstance(legacy_books, list):
+            return legacy_books
+    raise SystemExit(
+        f"{library_path} is not a recognized Readest library index; "
+        "expected an array or an object with a books array"
+    )
+
+
+def find_book_config(readest_data_dir: Path, book_hash: str) -> Path:
+    nested = readest_data_dir / "books" / book_hash / "config.json"
+    if nested.exists():
+        return nested
+    return readest_data_dir / book_hash / "config.json"
 
 
 def find_library_json(readest_dir: Path) -> Path:
