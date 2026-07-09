@@ -20,6 +20,16 @@ def env(name: str) -> str:
     return value
 
 
+def webdav_base_url(value: str) -> str:
+    parsed = urllib.parse.urlparse(value.strip())
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise SystemExit(
+            "invalid WEBDAV_URL: expected an absolute http(s) URL with a host, "
+            "for example https://readest-webdav-example.run.app"
+        )
+    return value.strip().rstrip("/")
+
+
 def auth_header(username: str, password: str) -> str:
     token = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("ascii")
     return f"Basic {token}"
@@ -126,10 +136,10 @@ def main() -> int:
         return 0 if args.allow_empty else 1
 
     if args.dry_run:
-        base_url = os.environ.get("WEBDAV_URL", "https://webdav.example.invalid").rstrip("/")
+        base_url = webdav_base_url(os.environ.get("WEBDAV_URL", "https://webdav.example.invalid"))
         headers = {"User-Agent": "ateliernymphet-epub-sync"}
     else:
-        base_url = env("WEBDAV_URL").rstrip("/")
+        base_url = webdav_base_url(env("WEBDAV_URL"))
         username = env("WEBDAV_USERNAME")
         password = env("WEBDAV_PASSWORD")
         headers = {
