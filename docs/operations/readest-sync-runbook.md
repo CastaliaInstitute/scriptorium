@@ -213,10 +213,12 @@ sync when the updated remote metadata changes.
 The repeatable version is:
 
 1. Use `apply-accepted-edits-and-publish.yml` from
-   `tools/readest-revision-sync/examples` in the source repo to create the
-   accepted-edit PR.
+   `tools/readest-revision-sync/examples` in the source repo, or call
+   `CastaliaInstitute/scriptorium/.github/workflows/apply-accepted-readest-edits.yml@main`
+   directly, to create the accepted-edit PR.
 2. Protect the source branch and review the PR normally.
 3. On merge to `main`, run a publish workflow that calls
    `sync-epubs-to-webdav.yml` with the repo's EPUB build command.
-4. In Readest, run full sync on Scriptorium builds; changed files are
-   redownloaded when `uploadedAt` or `metaHash` changes.
+4. Scriptorium Readest builds pull book changes while the library is open or
+   returning foreground/online; changed files are redownloaded when `uploadedAt`
+   or `metaHash` changes.
