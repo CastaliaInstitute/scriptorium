@@ -24,7 +24,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Validate Python scripts compile.
 - [x] Validate WebDAV service tests pass in in-memory mode.
 - [x] Push Scriptorium branch and open PR.
-- [ ] Configure required GitHub secrets on Scriptorium:
+- [x] Configure required GitHub secrets on Scriptorium:
   `GCP_SERVICE_ACCOUNT_JSON`.
 - [ ] Configure required Google Secret Manager secrets:
   `supabase-url`, `supabase-service-role-key`, `readest-webdav-password`.
