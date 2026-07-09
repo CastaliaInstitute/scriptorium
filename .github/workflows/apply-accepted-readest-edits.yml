@@ -1,0 +1,136 @@
+name: Apply Accepted Readest Edits
+
+on:
+  workflow_call:
+    inputs:
+      proposal_artifact_run_id:
+        description: "Optional workflow run id containing the proposal artifact"
+        required: false
+        type: string
+        default: ""
+      proposal_artifact_name:
+        description: "Actions artifact name containing proposal files"
+        required: false
+        type: string
+        default: "readest-edit-proposals"
+      proposal_artifact_path:
+        description: "Path to readest-source-edit-proposals.jsonl in the caller repository"
+        required: false
+        type: string
+        default: ".atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl"
+      accepted_keys:
+        description: "Whitespace-separated accepted proposal keys"
+        required: true
+        type: string
+      branch:
+        description: "Branch to create for the accepted source edits"
+        required: false
+        type: string
+        default: "codex/apply-readest-edits"
+      commit_message:
+        description: "Commit message for accepted source edits"
+        required: false
+        type: string
+        default: "Apply accepted Readest source edits"
+      dry_run:
+        description: "Validate accepted proposals without applying or opening a PR"
+        required: false
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      proposal_artifact_run_id:
+        description: "Optional workflow run id containing the proposal artifact"
+        required: false
+        default: ""
+      proposal_artifact_name:
+        description: "Actions artifact name containing proposal files"
+        required: false
+        default: "readest-edit-proposals"
+      proposal_artifact_path:
+        description: "Path to readest-source-edit-proposals.jsonl in this repository"
+        required: false
+        default: ".atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl"
+      accepted_keys:
+        description: "Whitespace-separated accepted proposal keys"
+        required: true
+      branch:
+        description: "Branch to create for the accepted source edits"
+        required: false
+        default: "codex/apply-readest-edits"
+      commit_message:
+        description: "Commit message for accepted source edits"
+        required: false
+        default: "Apply accepted Readest source edits"
+      dry_run:
+        description: "Validate accepted proposals without applying or opening a PR"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+        with:
+          path: caller
+
+      - name: Checkout Scriptorium automation
+        uses: actions/checkout@v4
+        with:
+          repository: CastaliaInstitute/scriptorium
+          ref: main
+          path: scriptorium
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download proposal artifact
+        if: ${{ inputs.proposal_artifact_run_id != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: caller
+        run: |
+          set -euo pipefail
+          rm -rf .atelier/readest-edit-proposals
+          mkdir -p .atelier/readest-edit-proposals
+          gh run download "${{ inputs.proposal_artifact_run_id }}" \
+            --name "${{ inputs.proposal_artifact_name }}" \
+            --dir .atelier/readest-edit-proposals
+
+      - name: Apply accepted proposal keys
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: caller
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          args=()
+          for key in ${{ inputs.accepted_keys }}; do
+            args+=(--accept-key "$key")
+          done
+          dry_run=()
+          create_pr=(--create-pr)
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            dry_run+=(--dry-run)
+            create_pr=()
+          fi
+          python3 ../scriptorium/tools/readest-revision-sync/scripts/apply_accepted_readest_source_edits.py \
+            --input "${{ inputs.proposal_artifact_path }}" \
+            --workspace-root . \
+            --target-repo-root . \
+            --branch "${{ inputs.branch }}" \
+            --commit-message "${{ inputs.commit_message }}" \
+            "${create_pr[@]}" \
+            "${dry_run[@]}" \
+            "${args[@]}"

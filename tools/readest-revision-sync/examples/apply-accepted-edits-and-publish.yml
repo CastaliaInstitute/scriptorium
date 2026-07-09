@@ -17,49 +17,15 @@ on:
 
 jobs:
   apply:
-    runs-on: ubuntu-latest
+    uses: CastaliaInstitute/scriptorium/.github/workflows/apply-accepted-readest-edits.yml@main
     permissions:
+      actions: read
       contents: write
       pull-requests: write
-
-    steps:
-      - name: Checkout caller repository
-        uses: actions/checkout@v4
-        with:
-          path: caller
-
-      - name: Checkout Scriptorium automation
-        uses: actions/checkout@v4
-        with:
-          repository: CastaliaInstitute/scriptorium
-          ref: main
-          path: scriptorium
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Apply accepted proposal keys
-        env:
-          GH_TOKEN: ${{ github.token }}
-        working-directory: caller
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          args=()
-          for key in ${{ inputs.accepted_keys }}; do
-            args+=(--accept-key "$key")
-          done
-          python3 ../scriptorium/tools/readest-revision-sync/scripts/apply_accepted_readest_source_edits.py \
-            --input "${{ inputs.proposal_artifact_path }}" \
-            --workspace-root . \
-            --target-repo-root . \
-            --branch "${{ inputs.branch }}" \
-            --commit-message "Apply accepted Readest source edits" \
-            --create-pr \
-            "${args[@]}"
+    with:
+      proposal_artifact_path: ${{ inputs.proposal_artifact_path }}
+      accepted_keys: ${{ inputs.accepted_keys }}
+      branch: ${{ inputs.branch }}
 
 # Pair this with a separate publish workflow in the caller repository:
 #
