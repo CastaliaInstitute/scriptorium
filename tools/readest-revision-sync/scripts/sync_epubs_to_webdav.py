@@ -50,7 +50,23 @@ def request(method: str, url: str, headers: dict[str, str], body: bytes | None =
         if method == "PROPFIND" and error.code == 404:
             return error.code, b""
         detail = error.read().decode("utf-8", errors="replace")
+        if error.code in {401, 403}:
+            raise SystemExit(
+                f"{method} {url} failed: HTTP {error.code}\n"
+                f"{detail}\n"
+                "Check READEST_WEBDAV_URL, READEST_WEBDAV_USERNAME, and "
+                "READEST_WEBDAV_PASSWORD in the caller repository, and confirm "
+                "readest-webdav-password matches the deployed Cloud Run service."
+            ) from error
         raise SystemExit(f"{method} {url} failed: HTTP {error.code}\n{detail}") from error
+    except urllib.error.URLError as error:
+        raise SystemExit(f"{method} {url} failed: {error.reason}") from error
+
+
+def preflight_webdav(base_url: str, headers: dict[str, str]) -> None:
+    status, _ = request("OPTIONS", f"{base_url}/", headers)
+    if status not in {200, 204}:
+        raise SystemExit(f"OPTIONS {base_url}/ failed: HTTP {status}")
 
 
 def ensure_collections(base_url: str, remote_path: str, headers: dict[str, str]) -> None:
@@ -146,6 +162,7 @@ def main() -> int:
             "Authorization": auth_header(username, password),
             "User-Agent": "ateliernymphet-epub-sync",
         }
+        preflight_webdav(base_url, headers)
 
     cwd = Path.cwd().resolve()
     desired: dict[str, Path] = {}

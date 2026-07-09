@@ -50,6 +50,47 @@ class SyncEpubsToWebdavTest(unittest.TestCase):
 
             self.assertEqual(found, [(root / "a.epub").resolve()])
 
+    def test_preflight_webdav_checks_options_root(self) -> None:
+        calls = []
+        original_request = sync.request
+
+        def fake_request(method: str, url: str, headers: dict[str, str], body: bytes | None = None):
+            calls.append((method, url, headers, body))
+            return 204, b""
+
+        try:
+            sync.request = fake_request
+            sync.preflight_webdav("https://readest-webdav.example.test", {"Authorization": "Basic token"})
+        finally:
+            sync.request = original_request
+
+        self.assertEqual(
+            calls,
+            [
+                (
+                    "OPTIONS",
+                    "https://readest-webdav.example.test/",
+                    {"Authorization": "Basic token"},
+                    None,
+                )
+            ],
+        )
+
+    def test_preflight_webdav_rejects_unexpected_status(self) -> None:
+        original_request = sync.request
+
+        def fake_request(method: str, url: str, headers: dict[str, str], body: bytes | None = None):
+            return 500, b""
+
+        try:
+            sync.request = fake_request
+            with self.assertRaises(SystemExit) as raised:
+                sync.preflight_webdav("https://readest-webdav.example.test", {})
+        finally:
+            sync.request = original_request
+
+        self.assertIn("OPTIONS https://readest-webdav.example.test/ failed: HTTP 500", str(raised.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
