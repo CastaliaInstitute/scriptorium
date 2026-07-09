@@ -9,7 +9,11 @@ import { SYNC_BOOKS_INTERVAL_SEC } from '@/services/constants';
 import { throttle } from '@/utils/throttle';
 import { debounce } from '@/utils/debounce';
 import { eventDispatcher } from '@/utils/event';
-import { findBooksNeedingFileRefresh, refreshSyncedBookFiles } from '../sync/bookFileRefresh';
+import {
+  findBooksNeedingFileRefresh,
+  mergeSyncedBookAfterRefresh,
+  refreshSyncedBookFiles,
+} from '../sync/bookFileRefresh';
 
 export const useBooksSync = () => {
   const _ = useTranslation();
@@ -128,17 +132,7 @@ export const useBooksSync = () => {
         if (!matchingBook.deletedAt && matchingBook.uploadedAt && !oldBook.coverDownloadedAt) {
           oldBook.coverImageUrl = await appService?.generateCoverImageUrl(oldBook);
         }
-        const mergedBook =
-          matchingBook.updatedAt >= oldBook.updatedAt
-            ? { ...oldBook, ...matchingBook, syncedAt: Date.now() }
-            : { ...matchingBook, ...oldBook, syncedAt: Date.now() };
-        if (refreshedBookHashes.has(matchingBook.hash)) {
-          mergedBook.downloadedAt = matchingBook.downloadedAt ?? Date.now();
-          mergedBook.coverDownloadedAt =
-            matchingBook.coverDownloadedAt ?? mergedBook.coverDownloadedAt;
-          mergedBook.coverImageUrl = matchingBook.coverImageUrl ?? mergedBook.coverImageUrl;
-        }
-        return mergedBook;
+        return mergeSyncedBookAfterRefresh(oldBook, matchingBook, refreshedBookHashes);
       }
       return oldBook;
     };

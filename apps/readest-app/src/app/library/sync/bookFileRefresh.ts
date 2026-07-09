@@ -40,3 +40,23 @@ export const refreshSyncedBookFiles = async (
 
   return refreshedBookHashes;
 };
+
+export const mergeSyncedBookAfterRefresh = (
+  oldBook: Book,
+  remoteBook: Book,
+  refreshedBookHashes: Set<string>,
+  syncedAt = Date.now(),
+) => {
+  const mergedBook =
+    remoteBook.updatedAt >= oldBook.updatedAt
+      ? { ...oldBook, ...remoteBook, syncedAt }
+      : { ...remoteBook, ...oldBook, syncedAt };
+
+  if (refreshedBookHashes.has(remoteBook.hash)) {
+    mergedBook.downloadedAt = remoteBook.downloadedAt ?? syncedAt;
+    mergedBook.coverDownloadedAt = remoteBook.coverDownloadedAt ?? mergedBook.coverDownloadedAt;
+    mergedBook.coverImageUrl = remoteBook.coverImageUrl ?? mergedBook.coverImageUrl;
+  }
+
+  return mergedBook;
+};
