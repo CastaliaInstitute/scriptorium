@@ -9,8 +9,8 @@ OPDS and Supabase-backed WebDAV.
 - [x] Clone `CastaliaInstitute/scriptorium`.
 - [x] Identify `main` as the source branch and `gh-pages` as static deploy output.
 - [ ] Decide whether to change Scriptorium's default branch from `gh-pages` to `main`.
-- [ ] Commit Scriptorium source changes on a feature branch.
-- [ ] Keep Bibliotech and AtelierNymphet caller workflow changes separate from unrelated dirty files.
+- [x] Commit Scriptorium source changes on focused feature branches.
+- [x] Keep Bibliotech and AtelierNymphet caller workflow changes separate from unrelated dirty files.
 
 ## Phase 1: Shared Scriptorium Infrastructure
 
@@ -51,7 +51,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Configure Bibliotech secrets:
   `READEST_WEBDAV_URL`, `READEST_WEBDAV_USERNAME`, `READEST_WEBDAV_PASSWORD`.
 - [x] Run Bibliotech workflow in dry-run mode.
-- [ ] Build Bibliotech EPUB artifacts inside the GitHub Action before WebDAV sync.
+- [x] Build Bibliotech EPUB artifacts inside the GitHub Action before WebDAV sync.
 - [ ] Run Bibliotech workflow live against WebDAV.
 - [ ] Confirm root WebDAV folder:
   `Bibliotech/`.
@@ -91,6 +91,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Confirm generated issues include:
   Readest deep links, source refs, highlight text, note text, and cross-reference links.
 - [x] Add reusable workflow hook to generate source-edit proposal artifacts.
+- [x] Enable source-edit proposal artifacts from AtelierNymphet's annotation workflow.
 - [ ] Run annotation workflow live and create test issue.
 - [x] Add duplicate prevention tests around issue keys.
 - [ ] Decide whether issues land in source repos directly or in Scriptorium first.
