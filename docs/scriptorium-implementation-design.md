@@ -20,6 +20,10 @@ reader extension layer.
 Source repos publish built EPUB artifacts. Scriptorium consumes those artifacts
 through sync/catalog protocols and maps reader marginalia back to source repos.
 
+`main` is the repository default branch and source-of-truth branch for
+Scriptorium development. `gh-pages` remains a generated static deploy branch for
+GitHub Pages only.
+
 ## System Shape
 
 ```text
@@ -233,8 +237,6 @@ Required principles:
 
 ## Open Questions
 
-- Should Scriptorium keep `gh-pages` as the default branch, or should `main`
-  become default and Pages deploy from a generated branch?
 - Which Supabase bucket is authoritative for public Bibliotech EPUBs versus
   private review EPUBs?
 - Should annotation issues be created in source repos directly, or aggregated in

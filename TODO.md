@@ -8,7 +8,7 @@ OPDS and Supabase-backed WebDAV.
 
 - [x] Clone `CastaliaInstitute/scriptorium`.
 - [x] Identify `main` as the source branch and `gh-pages` as static deploy output.
-- [ ] Decide whether to change Scriptorium's default branch from `gh-pages` to `main`.
+- [x] Change Scriptorium's default branch from `gh-pages` to `main`.
 - [x] Commit Scriptorium source changes on focused feature branches.
 - [x] Keep Bibliotech and AtelierNymphet caller workflow changes separate from unrelated dirty files.
 
