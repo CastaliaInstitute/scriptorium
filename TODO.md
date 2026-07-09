@@ -42,7 +42,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Run focused `bookFileRefresh` unit test.
 - [x] Add hook-level regression for refreshed synced EPUB bookkeeping.
 - [x] Run local web Readest browser smoke suite against the production web build.
-- [ ] Run local web Readest and verify sync refresh with a changed EPUB.
+- [x] Run local web Readest and verify sync refresh with a changed EPUB.
 - [ ] Verify mobile behavior after a changed `Absinthe.epub` syncs.
 - [x] Add focused unit tests around `bookFileRefresh` candidate selection.
 
