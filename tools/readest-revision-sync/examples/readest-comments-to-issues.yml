@@ -14,6 +14,7 @@ jobs:
     with:
       readest_remote_root: ""
       source_map: "output/rag/rag-ingest-manifest.jsonl"
+      source_map_build_command: "python3 scripts/build_rag_ingest_manifest.py"
       issue_limit: 20
       dry_run: false
     secrets:

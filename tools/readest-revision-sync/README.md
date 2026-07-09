@@ -64,6 +64,7 @@ jobs:
     with:
       readest_remote_root: ""
       source_map: "output/rag/rag-ingest-manifest.jsonl"
+      source_map_build_command: "python3 scripts/build_rag_ingest_manifest.py"
       issue_limit: 20
       dry_run: false
     secrets:
@@ -97,6 +98,11 @@ source map must exist and contain canonical entries; otherwise ingest exits
 before issue creation so a bad artifact path cannot silently quarantine every
 annotation. For intentional parser-only dry runs, pass
 `--allow-empty-source-map`.
+
+If the source map is a generated artifact, set `source_map_build_command` in
+the reusable workflow inputs. The command runs from the caller repository after
+checkout and before Readest annotation ingest, so repos can keep large JSONL
+manifests out of git while still enforcing source-backed review packets.
 
 Ingested annotations also include a durable `cross_references` array extracted
 from highlight/note text. The parser preserves datetime-stamped external
