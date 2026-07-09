@@ -10,7 +10,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from readest_cross_references import (
     markdown_reference_link,
@@ -310,6 +310,28 @@ def create_issue(title: str, body: str, labels: list[str], dry_run: bool) -> Non
     subprocess.run(command, check=True)
 
 
+def plan_review_issues(
+    records: list[dict[str, Any]],
+    seen: set[str],
+    limit: int,
+    labels: list[str],
+    dry_run: bool,
+    summarize: Callable[[dict[str, Any]], dict[str, str]],
+    create: Callable[[str, str, list[str], bool], None],
+) -> int:
+    created = 0
+    for record in records:
+        if created >= limit:
+            break
+        key = issue_key(record)
+        if key in seen:
+            continue
+        summary = summarize(record)
+        create(summary["title"], issue_body(record, summary, key), labels, dry_run)
+        created += 1
+    return created
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create GitHub issues from mapped Readest annotations.")
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
@@ -321,16 +343,15 @@ def main() -> int:
     labels = ["readest-review", "ai-review"]
     records = load_jsonl(args.input)
     seen = existing_issue_keys() if not args.dry_run else set()
-    created = 0
-    for record in records:
-        if created >= args.limit:
-            break
-        key = issue_key(record)
-        if key in seen:
-            continue
-        summary = gemini_summary(record, args.model)
-        create_issue(summary["title"], issue_body(record, summary, key), labels, args.dry_run)
-        created += 1
+    created = plan_review_issues(
+        records=records,
+        seen=seen,
+        limit=args.limit,
+        labels=labels,
+        dry_run=args.dry_run,
+        summarize=lambda record: gemini_summary(record, args.model),
+        create=create_issue,
+    )
     print(f"created_or_planned={created}")
     return 0
 

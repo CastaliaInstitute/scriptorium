@@ -84,7 +84,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Confirm generated issues include:
   Readest deep links, source refs, highlight text, note text, and cross-reference links.
 - [ ] Run annotation workflow live and create test issue.
-- [ ] Add duplicate prevention tests around issue keys.
+- [x] Add duplicate prevention tests around issue keys.
 - [ ] Decide whether issues land in source repos directly or in Scriptorium first.
 
 ## Phase 6: Cross-References and Marginalia
