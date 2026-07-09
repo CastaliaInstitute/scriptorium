@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Book } from '@/types/book';
 import {
   findBooksNeedingFileRefresh,
+  mergeSyncedBookAfterRefresh,
   refreshSyncedBookFiles,
   shouldRedownloadBook,
 } from '@/app/library/sync/bookFileRefresh';
@@ -85,5 +86,67 @@ describe('bookFileRefresh', () => {
     expect(progress).toHaveBeenCalledWith(0.5);
     expect(progress).toHaveBeenCalledWith(1);
     expect([...refreshed]).toEqual(['book-1', 'book-2']);
+  });
+
+  it('preserves local metadata after redownloading a changed remote book', () => {
+    const merged = mergeSyncedBookAfterRefresh(
+      book({
+        hash: 'book-1',
+        title: 'Local title',
+        updatedAt: 500,
+        downloadedAt: 100,
+        coverDownloadedAt: 120,
+        coverImageUrl: 'local-cover-url',
+      }),
+      book({
+        hash: 'book-1',
+        title: 'Remote title',
+        updatedAt: 400,
+        uploadedAt: 800,
+        downloadedAt: null,
+        coverDownloadedAt: null,
+        coverImageUrl: null,
+      }),
+      new Set(['book-1']),
+      900,
+    );
+
+    expect(merged.title).toBe('Local title');
+    expect(merged.uploadedAt).toBe(800);
+    expect(merged.downloadedAt).toBe(900);
+    expect(merged.coverDownloadedAt).toBe(120);
+    expect(merged.coverImageUrl).toBe('local-cover-url');
+    expect(merged.syncedAt).toBe(900);
+  });
+
+  it('accepts newer remote metadata after redownloading a changed remote book', () => {
+    const merged = mergeSyncedBookAfterRefresh(
+      book({
+        hash: 'book-1',
+        title: 'Local title',
+        updatedAt: 300,
+        downloadedAt: 100,
+        coverDownloadedAt: 120,
+        coverImageUrl: 'local-cover-url',
+      }),
+      book({
+        hash: 'book-1',
+        title: 'Remote title',
+        updatedAt: 400,
+        uploadedAt: 800,
+        downloadedAt: 850,
+        coverDownloadedAt: 860,
+        coverImageUrl: 'remote-cover-url',
+      }),
+      new Set(['book-1']),
+      900,
+    );
+
+    expect(merged.title).toBe('Remote title');
+    expect(merged.uploadedAt).toBe(800);
+    expect(merged.downloadedAt).toBe(850);
+    expect(merged.coverDownloadedAt).toBe(860);
+    expect(merged.coverImageUrl).toBe('remote-cover-url');
+    expect(merged.syncedAt).toBe(900);
   });
 });
