@@ -26,6 +26,10 @@ OPDS and Supabase-backed WebDAV.
 - [x] Push Scriptorium branch and open PR.
 - [x] Configure required GitHub secrets on Scriptorium:
   `GCP_SERVICE_ACCOUNT_JSON`.
+- [ ] Grant the configured GCP service account deploy permissions for project
+  `institute-481516`; current key authenticates as
+  `google-chat-bot@inquiry-institute.iam.gserviceaccount.com` but lacks
+  project, Secret Manager, and Cloud Run access.
 - [ ] Configure required Google Secret Manager secrets:
   `supabase-url`, `supabase-service-role-key`, `readest-webdav-password`.
 - [ ] Deploy Cloud Run WebDAV from Scriptorium workflow.
