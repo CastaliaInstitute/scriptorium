@@ -204,6 +204,27 @@ target repository, pass `--branch codex/apply-readest-edits --create-pr`. The
 tool validates diffs with `git apply --check`, refuses unaccepted proposal keys,
 and never edits EPUB artifacts directly.
 
+When proposal records point at several source repositories, omit
+`--target-repo-root` and set `--workspace-root` to a directory containing those
+repositories as sibling checkouts named by `source_repo`. The helper can print
+the required clone set for accepted keys:
+
+```sh
+python3 scripts/apply_accepted_readest_source_edits.py \
+  --input .atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl \
+  --accept-key readest-edit:bookhash:note-1:hash \
+  --default-source-owner AtelierNymphet \
+  --print-source-repos
+```
+
+The reusable workflow can do this automatically with
+`clone_source_repos: true`. In that mode it clones the accepted proposal source
+repositories using `SOURCE_REPO_TOKEN`, applies each accepted diff in its source
+checkout, and opens PRs in those source repositories. Use this for aggregate
+annotation workflows, such as AtelierNymphet, where the review packet is
+generated in one repository but the manuscripts live across `Absinthe`,
+`TheTrial`, `TheAppeal`, and other source repos.
+
 For repeatable repository automation, copy
 [`examples/apply-accepted-edits-and-publish.yml`](examples/apply-accepted-edits-and-publish.yml)
 into the caller repository, or call

@@ -14,6 +14,15 @@ on:
         description: "Branch to create for the accepted source edits"
         required: false
         default: "codex/apply-readest-edits"
+      clone_source_repos:
+        description: "Clone source repos named by accepted proposals and open PRs there"
+        required: false
+        type: boolean
+        default: true
+      source_repo_owner:
+        description: "Default owner for proposal records that only include source_repo"
+        required: false
+        default: "AtelierNymphet"
 
 jobs:
   apply:
@@ -26,6 +35,10 @@ jobs:
       proposal_artifact_path: ${{ inputs.proposal_artifact_path }}
       accepted_keys: ${{ inputs.accepted_keys }}
       branch: ${{ inputs.branch }}
+      clone_source_repos: ${{ inputs.clone_source_repos }}
+      source_repo_owner: ${{ inputs.source_repo_owner }}
+    secrets:
+      SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
 
 # Pair this with publish-after-accepted-edits.yml in the caller repository.
 # That workflow rebuilds EPUBs and syncs them to WebDAV when an accepted-edit PR

@@ -72,6 +72,7 @@ class ApplyAcceptedSourceEditsTest(unittest.TestCase):
 
             accepted = apply_edits.AcceptedProposal(
                 key="readest-edit:book:note:hash",
+                source_owner="AtelierNymphet",
                 source_repo="Absinthe",
                 source_path="manuscript/source.md",
                 target_root=repo,
@@ -90,6 +91,57 @@ class ApplyAcceptedSourceEditsTest(unittest.TestCase):
             self.assertEqual(
                 apply_edits.accepted_keys_from_file(path),
                 {"readest-edit:book:note:hash"},
+            )
+
+    def test_source_repos_for_proposals_uses_record_owner_and_default_owner(self) -> None:
+        proposals = [
+            apply_edits.AcceptedProposal(
+                key="owned",
+                source_owner="AtelierNymphet",
+                source_repo="Absinthe",
+                source_path="manuscript/source.md",
+                target_root=Path("/tmp/Absinthe"),
+                unified_diff=valid_diff(),
+            ),
+            apply_edits.AcceptedProposal(
+                key="defaulted",
+                source_owner="",
+                source_repo="TheTrial",
+                source_path="README.md",
+                target_root=Path("/tmp/TheTrial"),
+                unified_diff=valid_diff(),
+            ),
+        ]
+
+        self.assertEqual(
+            apply_edits.source_repos_for_proposals(proposals, "AtelierNymphet"),
+            ["AtelierNymphet/Absinthe", "AtelierNymphet/TheTrial"],
+        )
+
+    def test_selects_multiple_target_roots_from_source_repo_checkouts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            (workspace / "Absinthe").mkdir()
+            (workspace / "TheTrial").mkdir()
+
+            records = [
+                proposal("readest-edit:absinthe", diff=valid_diff()),
+                {
+                    **proposal("readest-edit:trial", diff=valid_diff()),
+                    "source_repo": "TheTrial",
+                    "source_path": "README.md",
+                },
+            ]
+
+            selected = apply_edits.select_accepted_proposals(
+                records,
+                {"readest-edit:absinthe", "readest-edit:trial"},
+                workspace,
+            )
+
+            self.assertEqual(
+                sorted(item.target_root.name for item in selected),
+                ["Absinthe", "TheTrial"],
             )
 
 
