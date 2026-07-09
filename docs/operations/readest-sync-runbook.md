@@ -81,6 +81,25 @@ Use `mirror=true` only when the local build output is authoritative for that
 remote prefix. It deletes remote EPUBs under the prefix that are no longer
 present locally.
 
+Enable post-sync verification on live caller workflows once the WebDAV service
+is deployed:
+
+```yaml
+with:
+  run_smoke: true
+  smoke_expected_folders: |
+    La Recherche
+    Twenty Dollar Words
+  smoke_required_opds_entries: |
+    Absinthe
+    Twenty Dollar Words
+```
+
+The reusable sync workflow does not run smoke checks during `dry_run: true`.
+For live runs it checks root WebDAV folders and `/opds` before the workflow can
+pass, which catches wrong prefixes, stale uploads, and missing OPDS entries
+before testing on Readest mobile.
+
 ## Missing Books
 
 Check these in order:

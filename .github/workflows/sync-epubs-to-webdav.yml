@@ -38,6 +38,21 @@ on:
         required: false
         type: boolean
         default: false
+      run_smoke:
+        description: "Run WebDAV/OPDS smoke checks after live sync"
+        required: false
+        type: boolean
+        default: false
+      smoke_expected_folders:
+        description: "Optional newline-separated root folders required by the smoke verifier"
+        required: false
+        type: string
+        default: ""
+      smoke_required_opds_entries:
+        description: "Optional newline-separated OPDS title or href substrings required by the smoke verifier"
+        required: false
+        type: string
+        default: ""
     secrets:
       READEST_WEBDAV_URL:
         required: true
@@ -79,6 +94,19 @@ on:
         required: false
         type: boolean
         default: false
+      run_smoke:
+        description: "Run WebDAV/OPDS smoke checks after live sync"
+        required: false
+        type: boolean
+        default: false
+      smoke_expected_folders:
+        description: "Optional newline-separated root folders required by the smoke verifier"
+        required: false
+        default: ""
+      smoke_required_opds_entries:
+        description: "Optional newline-separated OPDS title or href substrings required by the smoke verifier"
+        required: false
+        default: ""
 
 jobs:
   sync:
@@ -103,6 +131,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Set up Node
+        if: ${{ inputs.run_smoke && inputs.dry_run == false }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
       - name: Build EPUB artifacts
         if: ${{ inputs.epub_build_command != '' }}
@@ -143,3 +177,26 @@ jobs:
             "${mirror[@]}" \
             "${allow_empty[@]}" \
             "${args[@]}"
+
+      - name: Smoke test WebDAV and OPDS after sync
+        if: ${{ inputs.run_smoke && inputs.dry_run == false }}
+        working-directory: scriptorium/tools/readest-webdav-cloudrun
+        env:
+          READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
+          READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
+          READEST_WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}
+          SMOKE_EXPECTED_FOLDERS: ${{ inputs.smoke_expected_folders }}
+          SMOKE_REQUIRED_OPDS_ENTRIES: ${{ inputs.smoke_required_opds_entries }}
+        run: |
+          set -euo pipefail
+          npm ci
+          smoke_args=()
+          while IFS= read -r folder; do
+            [ -n "$folder" ] || continue
+            smoke_args+=(--expect-folder "$folder")
+          done <<< "$SMOKE_EXPECTED_FOLDERS"
+          while IFS= read -r entry; do
+            [ -n "$entry" ] || continue
+            smoke_args+=(--require-opds-entry "$entry")
+          done <<< "$SMOKE_REQUIRED_OPDS_ENTRIES"
+          node scripts/smoke_webdav_opds.mjs "${smoke_args[@]}"

@@ -31,6 +31,11 @@ jobs:
       remote_prefix: "La Recherche"
       flatten: true
       mirror: false
+      run_smoke: true
+      smoke_expected_folders: |
+        La Recherche
+      smoke_required_opds_entries: |
+        Absinthe
     secrets:
       READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
       READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
@@ -48,6 +53,11 @@ If EPUBs are generated artifacts, set `epub_build_command`. The command runs
 from the caller repository after checkout and before the WebDAV sync step, so
 the published set can be rebuilt repeatably in GitHub Actions without committing
 derived EPUB files.
+
+For live publishes, set `run_smoke: true` and provide newline-separated
+`smoke_expected_folders` and `smoke_required_opds_entries`. The reusable
+workflow skips smoke checks during `dry_run: true`, then verifies WebDAV root
+folders and OPDS title/href substrings immediately after a live upload.
 
 ### Readest Comments to Issues
 

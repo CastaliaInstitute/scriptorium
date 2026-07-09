@@ -126,6 +126,8 @@ OPDS and Supabase-backed WebDAV.
 - [x] Document local dev setup for Scriptorium.
 - [x] Document deploy setup for Cloud Run and GitHub Actions.
 - [x] Add smoke verifier for deployed WebDAV and OPDS.
+- [x] Add optional post-sync WebDAV/OPDS smoke verification to caller EPUB
+  publish workflows.
 - [ ] Run smoke verifier against deployed WebDAV and OPDS.
 - [x] Add a release checklist for Scriptorium reader builds.
 - [x] Add a runbook for failed sync, missing covers, and deleted-book tombstones.
