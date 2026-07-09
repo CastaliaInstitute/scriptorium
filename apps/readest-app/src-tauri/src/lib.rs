@@ -354,6 +354,22 @@ pub fn run() {
             {
                 use tauri::Manager;
                 app.add_capability(include_str!("../capabilities-extra/webdriver.json"))?;
+                if let Ok(cwd) = std::env::current_dir() {
+                    let mut test_roots = vec![cwd.clone()];
+                    if let Some(parent) = cwd.parent() {
+                        test_roots.push(parent.to_path_buf());
+                    }
+                    for root in test_roots {
+                        allow_dir_in_scopes(
+                            app.handle(),
+                            &root.join("src/__tests__/fixtures/data"),
+                        );
+                        allow_dir_in_scopes(
+                            app.handle(),
+                            &root.join(".readest-test-sandbox-tauri"),
+                        );
+                    }
+                }
             }
             #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
             {

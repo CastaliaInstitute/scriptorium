@@ -88,6 +88,12 @@ GEMINI_API_KEY
 `create_readest_review_issues.py` can still produce fallback issue bodies in
 local dry-runs.
 
+The annotation ingest step accepts either a directory containing `library.json`
+directly or a parent directory containing a single nested Readest sync folder,
+such as `Readest/library.json`. If the source map is missing, annotations are
+still normalized and quarantined for manual review instead of being mapped to
+repository source context.
+
 ## Optional Variables
 
 ```text

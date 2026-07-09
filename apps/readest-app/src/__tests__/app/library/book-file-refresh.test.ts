@@ -33,9 +33,7 @@ describe('bookFileRefresh', () => {
   });
 
   it('refreshes existing synced books when the remote upload is newer', () => {
-    expect(shouldRedownloadBook(book({ downloadedAt: 100 }), book({ uploadedAt: 200 }))).toBe(
-      true,
-    );
+    expect(shouldRedownloadBook(book({ downloadedAt: 100 }), book({ uploadedAt: 200 }))).toBe(true);
   });
 
   it('refreshes existing synced books when metadata hash changes', () => {
@@ -49,14 +47,8 @@ describe('bookFileRefresh', () => {
 
   it('finds refresh candidates by matching local and remote book hash', () => {
     const candidates = findBooksNeedingFileRefresh(
-      [
-        book({ hash: 'book-1', downloadedAt: 100 }),
-        book({ hash: 'book-2', downloadedAt: 300 }),
-      ],
-      [
-        book({ hash: 'book-1', uploadedAt: 200 }),
-        book({ hash: 'book-3', uploadedAt: 400 }),
-      ],
+      [book({ hash: 'book-1', downloadedAt: 100 }), book({ hash: 'book-2', downloadedAt: 300 })],
+      [book({ hash: 'book-1', uploadedAt: 200 }), book({ hash: 'book-3', uploadedAt: 400 })],
     );
 
     expect(candidates).toHaveLength(1);
