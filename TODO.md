@@ -118,7 +118,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Upload patch proposal artifacts from the annotation workflow.
 - [x] Gate patch proposals on explicit accepted proposal keys.
 - [x] Add helper to open GitHub PRs from accepted source-edit proposals.
-- [ ] Rebuild EPUBs after accepted edits.
+- [x] Rebuild EPUBs after accepted edits.
 - [ ] Resync updated EPUBs and verify Readest auto-refresh.
 
 ## Phase 8: Release and Operations

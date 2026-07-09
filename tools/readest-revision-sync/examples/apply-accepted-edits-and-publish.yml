@@ -1,0 +1,85 @@
+name: Apply Accepted Readest Edits
+
+on:
+  workflow_dispatch:
+    inputs:
+      proposal_artifact_path:
+        description: "Path to readest-source-edit-proposals.jsonl in this repository"
+        required: false
+        default: ".atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl"
+      accepted_keys:
+        description: "Whitespace-separated accepted proposal keys"
+        required: true
+      branch:
+        description: "Branch to create for the accepted source edits"
+        required: false
+        default: "codex/apply-readest-edits"
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+        with:
+          path: caller
+
+      - name: Checkout Scriptorium automation
+        uses: actions/checkout@v4
+        with:
+          repository: CastaliaInstitute/scriptorium
+          ref: main
+          path: scriptorium
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply accepted proposal keys
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: caller
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          args=()
+          for key in ${{ inputs.accepted_keys }}; do
+            args+=(--accept-key "$key")
+          done
+          python3 ../scriptorium/tools/readest-revision-sync/scripts/apply_accepted_readest_source_edits.py \
+            --input "${{ inputs.proposal_artifact_path }}" \
+            --workspace-root . \
+            --target-repo-root . \
+            --branch "${{ inputs.branch }}" \
+            --commit-message "Apply accepted Readest source edits" \
+            --create-pr \
+            "${args[@]}"
+
+# Pair this with a separate publish workflow in the caller repository:
+#
+# name: Publish EPUBs to Scriptorium
+# on:
+#   push:
+#     branches: [main]
+#   workflow_dispatch:
+#
+# jobs:
+#   publish:
+#     uses: CastaliaInstitute/scriptorium/.github/workflows/sync-epubs-to-webdav.yml@main
+#     with:
+#       epub_build_command: "npm ci && npm run build:epub"
+#       epub_globs: "output/epub/*.epub"
+#       remote_prefix: "La Recherche"
+#       flatten: true
+#       mirror: false
+#       dry_run: false
+#     secrets:
+#       READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
+#       READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
+#       READEST_WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}

@@ -194,6 +194,15 @@ target repository, pass `--branch codex/apply-readest-edits --create-pr`. The
 tool validates diffs with `git apply --check`, refuses unaccepted proposal keys,
 and never edits EPUB artifacts directly.
 
+For repeatable repository automation, copy
+[`examples/apply-accepted-edits-and-publish.yml`](examples/apply-accepted-edits-and-publish.yml)
+into the caller repository. It opens a source-edit PR from explicit accepted
+proposal keys. Pair it with a `push` or manual publish workflow that calls
+`sync-epubs-to-webdav.yml` with `epub_build_command`; after the accepted-edit PR
+merges, the publish workflow rebuilds EPUBs from source and syncs the changed
+files back to Readest WebDAV. Scriptorium Readest clients then refresh changed
+books on their next full sync when remote metadata changes.
+
 ## Optional Variables
 
 ```text

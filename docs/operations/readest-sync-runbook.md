@@ -179,7 +179,7 @@ proposal in an artifact:
 
 ```sh
 python3 tools/readest-revision-sync/scripts/apply_accepted_readest_source_edits.py \
-  --proposals-jsonl .atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl \
+  --input .atelier/readest-edit-proposals/readest-source-edit-proposals.jsonl \
   --accept-key "$PROPOSAL_KEY" \
   --workspace-root /path/to/workspace \
   --branch readest/source-edits \
@@ -190,3 +190,14 @@ python3 tools/readest-revision-sync/scripts/apply_accepted_readest_source_edits.
 After the PR merges in the source repo, rebuild EPUBs and run the WebDAV sync
 workflow again. Scriptorium Readest clients should refresh on their next full
 sync when the updated remote metadata changes.
+
+The repeatable version is:
+
+1. Use `apply-accepted-edits-and-publish.yml` from
+   `tools/readest-revision-sync/examples` in the source repo to create the
+   accepted-edit PR.
+2. Protect the source branch and review the PR normally.
+3. On merge to `main`, run a publish workflow that calls
+   `sync-epubs-to-webdav.yml` with the repo's EPUB build command.
+4. In Readest, run full sync on Scriptorium builds; changed files are
+   redownloaded when `uploadedAt` or `metaHash` changes.
