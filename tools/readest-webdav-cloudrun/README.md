@@ -187,6 +187,26 @@ Then:
 ```sh
 curl -i -u "$WEBDAV_USERNAME:$WEBDAV_PASSWORD" -X OPTIONS http://localhost:8080/
 curl -i -u "$WEBDAV_USERNAME:$WEBDAV_PASSWORD" -X PROPFIND -H 'Depth: 1' http://localhost:8080/
+npm run smoke -- \
+  --url http://localhost:8080 \
+  --username "$WEBDAV_USERNAME" \
+  --password "$WEBDAV_PASSWORD" \
+  --expect-folder "La Recherche" \
+  --expect-folder "Twenty Dollar Words"
+```
+
+For a deployed Cloud Run service, use the same smoke verifier with the deployed
+URL. Add `--require-opds-entry "Absinthe"` or another expected title/href once
+EPUBs have been published, so the check proves `/opds` is exposing acquisitions:
+
+```sh
+npm run smoke -- \
+  --url "$READEST_WEBDAV_URL" \
+  --username "$READEST_WEBDAV_USERNAME" \
+  --password "$READEST_WEBDAV_PASSWORD" \
+  --expect-folder "La Recherche" \
+  --expect-folder "Twenty Dollar Words" \
+  --require-opds-entry "Absinthe"
 ```
 
 ## Local Advanced Test Setup
@@ -205,6 +225,7 @@ The test suite uses `WEBDAV_TEST_MODE=1` with an in-memory storage backend to va
 - file sync and OPDS feed generation (`GET /opds`)
 - `COPY`, `MOVE`, `DELETE`
 - `LOCK` / `UNLOCK` responses
+- the live smoke verifier against the in-memory service
 
 ## Notes
 
