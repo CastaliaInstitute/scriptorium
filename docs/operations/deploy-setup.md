@@ -20,6 +20,20 @@ gcloud services enable \
   secretmanager.googleapis.com
 ```
 
+Grant the Scriptorium deploy service account the roles needed to create/update
+Cloud Run services, build from source, publish build artifacts, manage deploy
+secrets, enable required APIs, and attach the runtime service account:
+
+```sh
+PROJECT_ID=institute-481516 \
+SERVICE_ACCOUNT_EMAIL=google-chat-bot@inquiry-institute.iam.gserviceaccount.com \
+APPLY=true \
+tools/readest-webdav-cloudrun/scripts/bootstrap_gcp_iam.sh
+```
+
+Run the same command without `APPLY=true` to check role bindings without
+changing IAM.
+
 Create or update the Secret Manager entries consumed by Cloud Run:
 
 ```text

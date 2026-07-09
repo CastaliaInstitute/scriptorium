@@ -12,6 +12,15 @@ Enable the services once:
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com secretmanager.googleapis.com
 ```
 
+Grant the deploy service account required IAM roles:
+
+```sh
+PROJECT_ID=institute-481516 \
+SERVICE_ACCOUNT_EMAIL=google-chat-bot@inquiry-institute.iam.gserviceaccount.com \
+APPLY=true \
+scripts/bootstrap_gcp_iam.sh
+```
+
 Create or update Secret Manager secrets. Do not paste secret values into this repo:
 
 ```sh

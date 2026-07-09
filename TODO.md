@@ -29,7 +29,9 @@ OPDS and Supabase-backed WebDAV.
 - [ ] Grant the configured GCP service account deploy permissions for project
   `institute-481516`; current key authenticates as
   `google-chat-bot@inquiry-institute.iam.gserviceaccount.com` but lacks
-  project, Secret Manager, and Cloud Run access.
+  project, Secret Manager, and Cloud Run access. Use
+  `tools/readest-webdav-cloudrun/scripts/bootstrap_gcp_iam.sh` from an owner
+  credential.
 - [ ] Configure required Google Secret Manager secrets:
   `supabase-url`, `supabase-service-role-key`, `readest-webdav-password`.
 - [ ] Deploy Cloud Run WebDAV from Scriptorium workflow.
