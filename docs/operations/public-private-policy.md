@@ -76,10 +76,9 @@ reader context, and AI-generated source diffs. Treat these as private:
 output/readest/
 ```
 
-GitHub issues created from annotations should land in the source repository when
-that repository is private and owns the manuscript. If a public repository is
-used for coordination, issue bodies must avoid private source excerpts unless
-the excerpt is cleared for that audience.
+GitHub issues created from annotations land in the caller/source repository by
+default. If a public repository is used for coordination, issue bodies must
+avoid private source excerpts unless the excerpt is cleared for that audience.
 
 ## Secrets
 

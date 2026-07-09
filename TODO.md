@@ -94,7 +94,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Enable source-edit proposal artifacts from AtelierNymphet's annotation workflow.
 - [ ] Run annotation workflow live and create test issue.
 - [x] Add duplicate prevention tests around issue keys.
-- [ ] Decide whether issues land in source repos directly or in Scriptorium first.
+- [x] Decide whether issues land in source repos directly or in Scriptorium first.
 
 ## Phase 6: Cross-References and Marginalia
 
