@@ -131,6 +131,7 @@ jobs:
         working-directory: caller
         env:
           GH_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+          SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
         run: ${{ inputs.source_map_build_command }}
 
       - name: Download Readest annotation exports
