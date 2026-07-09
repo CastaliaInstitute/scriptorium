@@ -16,6 +16,7 @@ DEFAULT_INPUT = Path(".atelier/readest-edit-proposals/readest-source-edit-propos
 @dataclass(frozen=True)
 class AcceptedProposal:
     key: str
+    source_owner: str
     source_repo: str
     source_path: str
     target_root: Path
@@ -119,6 +120,7 @@ def select_accepted_proposals(
         selected.append(
             AcceptedProposal(
                 key=key,
+                source_owner=str(item.get("source_owner") or ""),
                 source_repo=str(item.get("source_repo") or ""),
                 source_path=str(item.get("source_path") or ""),
                 target_root=resolve_target_root(item, workspace_root, target_repo_root),
@@ -129,6 +131,24 @@ def select_accepted_proposals(
     if rejected:
         raise SystemExit("cannot apply accepted proposals:\n" + "\n".join(f"- {item}" for item in rejected))
     return selected
+
+
+def source_repos_for_proposals(proposals: list[AcceptedProposal], default_owner: str) -> list[str]:
+    repos: set[str] = set()
+    for proposal in proposals:
+        if not proposal.source_repo:
+            continue
+        if "/" in proposal.source_repo:
+            repos.add(proposal.source_repo)
+            continue
+        owner = proposal.source_owner or default_owner
+        if not owner:
+            raise SystemExit(
+                f"accepted proposal {proposal.key} has source_repo={proposal.source_repo!r} "
+                "but no source_owner; pass --default-source-owner"
+            )
+        repos.add(f"{owner}/{proposal.source_repo}")
+    return sorted(repos)
 
 
 def run(command: list[str], cwd: Path, input_text: str | None = None, dry_run: bool = False) -> subprocess.CompletedProcess[str]:
@@ -212,6 +232,16 @@ def main() -> int:
     parser.add_argument("--branch", help="Create this branch before committing accepted edits.")
     parser.add_argument("--commit-message", default="Apply accepted Readest source edits")
     parser.add_argument("--create-pr", action="store_true", help="Push the branch and open a GitHub PR.")
+    parser.add_argument(
+        "--print-source-repos",
+        action="store_true",
+        help="Print owner/repo values required by the accepted proposals and exit.",
+    )
+    parser.add_argument(
+        "--default-source-owner",
+        default="",
+        help="Owner to use when accepted proposal records contain source_repo but no source_owner.",
+    )
     args = parser.parse_args()
 
     accepted_keys = merge_accepted_keys(args.accept_key, args.accepted_keys_file)
@@ -225,13 +255,16 @@ def main() -> int:
     if not proposals:
         raise SystemExit("no accepted proposals selected")
 
+    if args.print_source_repos:
+        for repo in source_repos_for_proposals(proposals, args.default_source_owner):
+            print(repo)
+        return 0
+
     grouped: dict[Path, list[AcceptedProposal]] = defaultdict(list)
     for proposal in proposals:
         grouped[proposal.target_root].append(proposal)
 
     for target_root, group in grouped.items():
-        if args.branch and len(grouped) > 1:
-            raise SystemExit("--branch currently requires all accepted proposals to target one repository")
         if args.branch and not args.dry_run:
             require_clean_worktree(target_root)
         apply_group(group, args.dry_run)

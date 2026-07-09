@@ -320,6 +320,7 @@ def main() -> int:
             {
                 "key": key,
                 "proposal_path": markdown_path.as_posix(),
+                "source_owner": record.get("source_owner"),
                 "source_path": record.get("source_path"),
                 "source_repo": record.get("source_repo"),
                 "readest": record.get("readest") or {},

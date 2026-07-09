@@ -32,11 +32,29 @@ on:
         required: false
         type: string
         default: "Apply accepted Readest source edits"
+      clone_source_repos:
+        description: "Clone source repos named by accepted proposals and apply edits there"
+        required: false
+        type: boolean
+        default: false
+      source_repo_owner:
+        description: "Default GitHub owner for proposal records that only include source_repo"
+        required: false
+        type: string
+        default: ""
+      source_workspace:
+        description: "Workspace directory for cloned source repos when clone_source_repos is true"
+        required: false
+        type: string
+        default: ".scriptorium-source-repos"
       dry_run:
         description: "Validate accepted proposals without applying or opening a PR"
         required: false
         type: boolean
         default: false
+    secrets:
+      SOURCE_REPO_TOKEN:
+        required: false
   workflow_dispatch:
     inputs:
       proposal_artifact_run_id:
@@ -62,6 +80,19 @@ on:
         description: "Commit message for accepted source edits"
         required: false
         default: "Apply accepted Readest source edits"
+      clone_source_repos:
+        description: "Clone source repos named by accepted proposals and apply edits there"
+        required: false
+        type: boolean
+        default: false
+      source_repo_owner:
+        description: "Default GitHub owner for proposal records that only include source_repo"
+        required: false
+        default: ""
+      source_workspace:
+        description: "Workspace directory for cloned source repos when clone_source_repos is true"
+        required: false
+        default: ".scriptorium-source-repos"
       dry_run:
         description: "Validate accepted proposals without applying or opening a PR"
         required: false
@@ -107,14 +138,53 @@ jobs:
             --name "${{ inputs.proposal_artifact_name }}" \
             --dir .atelier/readest-edit-proposals
 
-      - name: Apply accepted proposal keys
+      - name: Clone source repositories
+        if: ${{ inputs.clone_source_repos }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+          SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
         working-directory: caller
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          args=()
+          for key in ${{ inputs.accepted_keys }}; do
+            args+=(--accept-key "$key")
+          done
+          default_owner="${{ inputs.source_repo_owner }}"
+          if [ -z "$default_owner" ]; then
+            default_owner="${GITHUB_REPOSITORY_OWNER}"
+          fi
+          workspace="${{ inputs.source_workspace }}"
+          rm -rf "$workspace"
+          mkdir -p "$workspace"
+          if [ -n "${SOURCE_REPO_TOKEN:-}" ]; then
+            git config --global url."https://x-access-token:${SOURCE_REPO_TOKEN}@github.com/".insteadOf "https://github.com/"
+          fi
+          mapfile -t source_repos < <(
+            python3 ../scriptorium/tools/readest-revision-sync/scripts/apply_accepted_readest_source_edits.py \
+              --input "${{ inputs.proposal_artifact_path }}" \
+              --workspace-root "$workspace" \
+              --default-source-owner "$default_owner" \
+              --print-source-repos \
+              "${args[@]}"
+          )
+          for source_repo in "${source_repos[@]}"; do
+            repo_name="${source_repo##*/}"
+            git clone --depth 1 "https://github.com/${source_repo}.git" "$workspace/$repo_name"
+          done
+
+      - name: Apply accepted proposal keys
+        env:
+          GH_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
+          SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
+        working-directory: caller
+        run: |
+          set -euo pipefail
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "${SOURCE_REPO_TOKEN:-}" ]; then
+            git config --global url."https://x-access-token:${SOURCE_REPO_TOKEN}@github.com/".insteadOf "https://github.com/"
+          fi
           args=()
           for key in ${{ inputs.accepted_keys }}; do
             args+=(--accept-key "$key")
@@ -125,10 +195,16 @@ jobs:
             dry_run+=(--dry-run)
             create_pr=()
           fi
+          workspace_root="."
+          target_args=(--target-repo-root .)
+          if [ "${{ inputs.clone_source_repos }}" = "true" ]; then
+            workspace_root="${{ inputs.source_workspace }}"
+            target_args=()
+          fi
           python3 ../scriptorium/tools/readest-revision-sync/scripts/apply_accepted_readest_source_edits.py \
             --input "${{ inputs.proposal_artifact_path }}" \
-            --workspace-root . \
-            --target-repo-root . \
+            --workspace-root "$workspace_root" \
+            "${target_args[@]}" \
             --branch "${{ inputs.branch }}" \
             --commit-message "${{ inputs.commit_message }}" \
             "${create_pr[@]}" \
