@@ -85,6 +85,7 @@ def gemini_summary(record: dict[str, Any], model: str) -> dict[str, str]:
             "source_path": record.get("source_path"),
             "highlight_text": record.get("highlight_text"),
             "reader_note": record.get("reader_note"),
+            "marginalia_layer": record.get("marginalia_layer"),
             "match_confidence": record.get("match_confidence"),
             "cross_references": references_as_prompt_payload(record_cross_references(record)),
         },
@@ -274,6 +275,7 @@ def issue_body(record: dict[str, Any], summary: dict[str, str], key: str) -> str
     - Source path: `{record.get("source_path")}`
     - Source ref: `{record.get("source_ref")}`
     - Source span: `{record.get("source_char_start")}`-`{record.get("source_char_end")}`
+    - Marginalia layer: `{record_marginalia_layer(record)}`
     - Match confidence: `{record.get("match_confidence")}`
     - Readest book hash: `{readest.get("book_hash")}`
     - Readest annotation id: `{readest.get("annotation_id")}`
@@ -332,9 +334,24 @@ def plan_review_issues(
         if key in seen:
             continue
         summary = summarize(record)
-        create(summary["title"], issue_body(record, summary, key), labels, dry_run)
+        create(summary["title"], issue_body(record, summary, key), issue_labels(labels, record), dry_run)
         created += 1
     return created
+
+
+def record_marginalia_layer(record: dict[str, Any]) -> str:
+    marginalia = record.get("marginalia")
+    marginalia_layer = marginalia.get("layer") if isinstance(marginalia, dict) else None
+    layer = str(record.get("marginalia_layer") or marginalia_layer or "personal")
+    if layer not in {"personal", "faculty", "public", "ai-review"}:
+        return "personal"
+    return layer
+
+
+def issue_labels(base_labels: list[str], record: dict[str, Any]) -> list[str]:
+    labels = list(dict.fromkeys(base_labels))
+    labels.append(f"marginalia-{record_marginalia_layer(record)}")
+    return list(dict.fromkeys(labels))
 
 
 def main() -> int:

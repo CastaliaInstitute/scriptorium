@@ -135,6 +135,12 @@ Layers:
 - `public`: cleared notes that may ship with a public edition.
 - `ai-review`: generated review material requiring human acceptance.
 
+Annotations default to `personal`. A reader or reviewer may route an annotation
+to another layer with an explicit note token such as `layer:faculty`,
+`[layer:public]`, or `layer:ai-review`. Review issue automation adds a
+`marginalia-<layer>` label so downstream triage can distinguish private notes,
+teaching/review notes, public-edition marginalia, and AI review material.
+
 Only accepted source-edit proposal keys may become source changes.
 
 ## Mapping Rules

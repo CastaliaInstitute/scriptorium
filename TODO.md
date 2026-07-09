@@ -104,7 +104,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Add parser for explicit cross-references in notes and marginalia.
 - [ ] Add generated footnote/endnote references between La Recherche and Twenty Dollar Words.
 - [x] Add source-map links from EPUB CFI to repository path/span.
-- [ ] Add optional marginalia layers:
+- [x] Add optional marginalia layers:
   personal, faculty, public, AI review.
 - [x] Persist parsed annotation cross-references as durable JSON objects, not only UI state.
 
