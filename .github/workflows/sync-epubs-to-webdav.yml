@@ -28,6 +28,11 @@ on:
         required: false
         type: boolean
         default: false
+      allow_empty:
+        description: "Exit successfully when no EPUBs match"
+        required: false
+        type: boolean
+        default: false
     secrets:
       READEST_WEBDAV_URL:
         required: true
@@ -57,6 +62,11 @@ on:
         default: false
       mirror:
         description: "Delete remote EPUBs under the prefix that are not matched locally"
+        required: false
+        type: boolean
+        default: false
+      allow_empty:
+        description: "Exit successfully when no EPUBs match"
         required: false
         type: boolean
         default: false
@@ -105,10 +115,15 @@ jobs:
           if [ "${{ inputs.mirror }}" = "true" ]; then
             mirror+=(--mirror)
           fi
+          allow_empty=()
+          if [ "${{ inputs.allow_empty }}" = "true" ]; then
+            allow_empty+=(--allow-empty)
+          fi
           cd caller
           python3 ../scriptorium/tools/readest-revision-sync/scripts/sync_epubs_to_webdav.py \
             --remote-prefix "${{ inputs.remote_prefix }}" \
             "${dry_run[@]}" \
             "${flatten[@]}" \
             "${mirror[@]}" \
+            "${allow_empty[@]}" \
             "${args[@]}"
