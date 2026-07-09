@@ -124,9 +124,10 @@ def as_int(value: Any) -> int | None:
 
 
 def load_readest_books(readest_dir: Path, include_deleted: bool) -> list[dict[str, Any]]:
-    library_path = readest_dir / "library.json"
+    library_path = find_library_json(readest_dir)
     if not library_path.exists():
         raise SystemExit(f"library.json not found at {library_path}")
+    readest_data_dir = library_path.parent
     library = load_json(library_path)
     if not isinstance(library, list):
         raise SystemExit(f"{library_path} is not a JSON array; Readest format may have changed")
@@ -140,12 +141,32 @@ def load_readest_books(readest_dir: Path, include_deleted: bool) -> list[dict[st
         book_hash = raw_book.get("hash")
         if not isinstance(book_hash, str) or not book_hash:
             continue
-        config_path = readest_dir / book_hash / "config.json"
+        config_path = readest_data_dir / book_hash / "config.json"
         config = load_json(config_path) if config_path.exists() else {}
         if not isinstance(config, dict):
             config = {}
         books.append({"book": raw_book, "config": config, "config_path": config_path.as_posix()})
     return books
+
+
+def find_library_json(readest_dir: Path) -> Path:
+    direct = readest_dir / "library.json"
+    if direct.exists():
+        return direct
+
+    readest_nested = readest_dir / "Readest" / "library.json"
+    if readest_nested.exists():
+        return readest_nested
+
+    matches = sorted(readest_dir.glob("*/library.json"))
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        raise SystemExit(
+            "multiple nested library.json files found under "
+            f"{readest_dir}; pass the specific Readest sync directory"
+        )
+    return direct
 
 
 def iter_annotations(books: list[dict[str, Any]], include_deleted: bool) -> Iterable[tuple[dict[str, Any], dict[str, Any], dict[str, Any]]]:

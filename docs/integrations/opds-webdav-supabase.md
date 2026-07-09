@@ -82,6 +82,10 @@ It downloads Readest `library.json` and `config.json` files from WebDAV, maps
 annotations to the caller repository source map, and creates GitHub issues with
 Gemini summaries.
 
+Readest commonly stores sync data beneath a `Readest/` directory. The shared
+ingest script autodetects that nested folder when the workflow scans the WebDAV
+root.
+
 Additional optional secret:
 
 ```text
