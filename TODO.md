@@ -78,7 +78,7 @@ OPDS and Supabase-backed WebDAV.
 - [x] Centralize Readest JSON download, annotation ingest, and Gemini issue creation scripts.
 - [x] Add reusable comments-to-issues workflow.
 - [x] Verify Readest export JSON layout from live WebDAV.
-- [ ] Verify AtelierNymphet source map path:
+- [x] Verify AtelierNymphet source map path:
   `LaRecherche/output/rag/rag-ingest-manifest.jsonl`.
 - [x] Run annotation workflow in dry-run mode.
 - [x] Confirm generated issues include:

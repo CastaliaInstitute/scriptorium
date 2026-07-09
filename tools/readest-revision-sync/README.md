@@ -92,9 +92,11 @@ The annotation ingest step accepts either a directory containing `library.json`
 directly or a parent directory containing a single nested Readest sync folder,
 such as `Readest/library.json`. It supports both legacy array-style indexes and
 current object-style indexes with a `books` array, and it reads book configs
-from either `<hash>/config.json` or `books/<hash>/config.json`. If the source
-map is missing, annotations are still normalized and quarantined for manual
-review instead of being mapped to repository source context.
+from either `<hash>/config.json` or `books/<hash>/config.json`. The configured
+source map must exist and contain canonical entries; otherwise ingest exits
+before issue creation so a bad artifact path cannot silently quarantine every
+annotation. For intentional parser-only dry runs, pass
+`--allow-empty-source-map`.
 
 Ingested annotations also include a durable `cross_references` array extracted
 from highlight/note text. The parser preserves datetime-stamped external
