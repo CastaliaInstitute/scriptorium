@@ -210,12 +210,15 @@ into the caller repository, or call
 `CastaliaInstitute/scriptorium/.github/workflows/apply-accepted-readest-edits.yml@main`
 directly. It opens a source-edit PR from explicit accepted proposal keys and can
 download the `readest-edit-proposals` artifact from a prior annotation workflow
-run by passing `proposal_artifact_run_id`. Pair it with a `push` or manual
-publish workflow that calls `sync-epubs-to-webdav.yml` with
-`epub_build_command`; after the accepted-edit PR merges, the publish workflow
-rebuilds EPUBs from source and syncs the changed files back to Readest WebDAV.
-Scriptorium Readest clients then refresh changed books automatically when remote
-metadata changes.
+run by passing `proposal_artifact_run_id`.
+
+Then copy
+[`examples/publish-after-accepted-edits.yml`](examples/publish-after-accepted-edits.yml)
+or create an equivalent caller workflow that invokes `sync-epubs-to-webdav.yml`
+with the repo's `epub_build_command`. After the accepted-edit PR merges, the
+publish workflow rebuilds EPUBs from source and syncs the changed files back to
+Readest WebDAV. Scriptorium Readest clients then refresh changed books
+automatically when remote metadata changes.
 
 ## Optional Variables
 

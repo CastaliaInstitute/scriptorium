@@ -1,0 +1,33 @@
+name: Publish EPUBs After Accepted Readest Edits
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.pull_request.merged == true &&
+        startsWith(github.event.pull_request.head.ref, 'codex/apply-readest-edits')
+      )
+    uses: CastaliaInstitute/scriptorium/.github/workflows/sync-epubs-to-webdav.yml@main
+    with:
+      epub_build_command: "npm ci && npm run build:epub"
+      epub_globs: "output/epub/*.epub"
+      remote_prefix: "La Recherche"
+      flatten: true
+      mirror: false
+      dry_run: false
+      run_smoke: true
+      smoke_expected_folders: |
+        La Recherche
+      smoke_required_opds_entries: |
+        Absinthe
+    secrets:
+      READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
+      READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
+      READEST_WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}
