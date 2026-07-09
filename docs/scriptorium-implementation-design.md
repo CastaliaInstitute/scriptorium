@@ -89,6 +89,12 @@ with `kind`, `raw`, and `target` fields, plus timestamp metadata for
 datetime-stamped anchors. Review packets and GitHub issues render those
 references as footnote/endnote cross-reference material.
 
+Canonical machine addresses are documented in
+[Scriptorium Cross-Reference URI Schema](cross-reference-uri-schema.md). The
+first schema version emits `scriptorium://message/...` for external message or
+email anchors and `scriptorium://work/...` for passages in La Recherche, Twenty
+Dollar Words, and future collections.
+
 ## Storage and Sync
 
 ### WebDAV

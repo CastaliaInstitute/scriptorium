@@ -107,15 +107,29 @@ class ReviewIssueToolsTest(unittest.TestCase):
 
         self.assertEqual(by_kind["datetime-anchor"]["timestamp"], "2026.07.02.02:24")
         self.assertEqual(
+            by_kind["datetime-anchor"]["canonical_uri"],
+            "scriptorium://message/facebook/daniel-du-kinque/2026.07.02.02%3A24",
+        )
+        self.assertEqual(
             by_kind["la-recherche"]["target"],
             "https://ateliernymphet.com/larecherche/absinthe/chapter-1",
+        )
+        self.assertEqual(
+            by_kind["la-recherche"]["canonical_uri"],
+            "scriptorium://work/la-recherche/absinthe/chapter-1",
         )
         self.assertEqual(
             by_kind["twenty-dollar-words"]["target"],
             "https://ateliernymphet.com/twenty-dollar-words/absinthe/green-hour",
         )
+        self.assertEqual(
+            by_kind["twenty-dollar-words"]["canonical_uri"],
+            "scriptorium://work/twenty-dollar-words/absinthe/green-hour",
+        )
         self.assertEqual(by_kind["readest-deep-link"]["target"], "readest://book/abc/annotation/def")
+        self.assertEqual(by_kind["readest-deep-link"]["canonical_uri"], "readest://book/abc/annotation/def")
         self.assertEqual(by_kind["url"]["target"], "https://example.test/a")
+        self.assertEqual(by_kind["url"]["canonical_uri"], "https://example.test/a")
 
 
 if __name__ == "__main__":
