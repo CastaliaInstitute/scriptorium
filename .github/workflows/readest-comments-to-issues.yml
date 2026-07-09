@@ -42,6 +42,8 @@ on:
         required: true
       GEMINI_API_KEY:
         required: false
+      SOURCE_REPO_TOKEN:
+        required: false
   workflow_dispatch:
     inputs:
       readest_remote_root:
@@ -98,6 +100,8 @@ jobs:
       - name: Build source map
         if: ${{ inputs.source_map_build_command != '' }}
         working-directory: caller
+        env:
+          GH_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN || github.token }}
         run: ${{ inputs.source_map_build_command }}
 
       - name: Download Readest annotation exports

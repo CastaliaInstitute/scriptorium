@@ -72,6 +72,7 @@ jobs:
       READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
       READEST_WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SOURCE_REPO_TOKEN: ${{ secrets.SOURCE_REPO_TOKEN }}
 ```
 
 ## Required Secrets
@@ -102,7 +103,9 @@ annotation. For intentional parser-only dry runs, pass
 If the source map is a generated artifact, set `source_map_build_command` in
 the reusable workflow inputs. The command runs from the caller repository after
 checkout and before Readest annotation ingest, so repos can keep large JSONL
-manifests out of git while still enforcing source-backed review packets.
+manifests out of git while still enforcing source-backed review packets. The
+build command receives `GH_TOKEN`, using optional `SOURCE_REPO_TOKEN` when set,
+so private source repos can be cloned before manifest generation.
 
 Ingested annotations also include a durable `cross_references` array extracted
 from highlight/note text. The parser preserves datetime-stamped external

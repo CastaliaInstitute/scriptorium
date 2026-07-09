@@ -82,7 +82,8 @@ It downloads Readest `library.json` and `config.json` files from WebDAV, maps
 annotations to the caller repository source map, and creates GitHub issues with
 Gemini summaries. If the source map is generated, pass
 `source_map_build_command` so the caller repository builds it before annotation
-ingest.
+ingest. The build step receives `GH_TOKEN`, backed by optional
+`SOURCE_REPO_TOKEN`, for workflows that need to clone private source repos.
 
 Readest commonly stores sync data beneath a `Readest/` directory. The shared
 ingest script autodetects that nested folder when the workflow scans the WebDAV
