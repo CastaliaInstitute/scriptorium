@@ -80,6 +80,8 @@ OPDS and Supabase-backed WebDAV.
 - [x] Verify Readest export JSON layout from live WebDAV.
 - [x] Verify AtelierNymphet source map path:
   `LaRecherche/output/rag/rag-ingest-manifest.jsonl`.
+- [x] Add reusable workflow hook to build generated source maps before Readest
+  annotation ingest.
 - [x] Run annotation workflow in dry-run mode.
 - [x] Confirm generated issues include:
   Readest deep links, source refs, highlight text, note text, and cross-reference links.

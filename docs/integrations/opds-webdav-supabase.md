@@ -80,7 +80,9 @@ CastaliaInstitute/scriptorium/.github/workflows/readest-comments-to-issues.yml@m
 
 It downloads Readest `library.json` and `config.json` files from WebDAV, maps
 annotations to the caller repository source map, and creates GitHub issues with
-Gemini summaries.
+Gemini summaries. If the source map is generated, pass
+`source_map_build_command` so the caller repository builds it before annotation
+ingest.
 
 Readest commonly stores sync data beneath a `Readest/` directory. The shared
 ingest script autodetects that nested folder when the workflow scans the WebDAV
