@@ -147,8 +147,11 @@ Scriptorium adds `bookFileRefresh` to the library sync flow. When a synced
 remote book has a newer `uploadedAt` value or changed `metaHash`, the local
 device redownloads the EPUB and cover during sync.
 
-This makes source repo rebuilds propagate to mobile/desktop readers without
-manual delete/reimport.
+The library shell also installs automatic book pulls while the app is open:
+initial mount, periodic visible-tab checks, focus return, visibility return, and
+online return all ask cloud sync for book changes. This makes source repo
+rebuilds propagate to mobile/desktop readers without manual delete/reimport or
+opening the integration panel just to press Sync.
 
 ### Manuscript and Marginalia Roadmap
 

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import type { Book } from '@/types/book';
+import { SYNC_BOOKS_INTERVAL_SEC } from '@/services/constants';
 
 const h = vi.hoisted(() => {
   const book = (overrides: Partial<Book> = {}): Book =>
@@ -42,6 +43,7 @@ const h = vi.hoisted(() => {
     useLibraryStoreMock,
     user: { id: 'reader-1' },
     syncedBooks: [] as Book[],
+    lastSyncedAtBooks: 1,
     syncBooks: vi.fn(async () => 0),
     appService: {
       downloadBook: vi.fn(async (bookToDownload: Book) => {
@@ -69,7 +71,7 @@ vi.mock('@/hooks/useSync', () => ({
     useSyncInited: true,
     syncedBooks: h.syncedBooks,
     syncBooks: h.syncBooks,
-    lastSyncedAtBooks: 1,
+    lastSyncedAtBooks: h.lastSyncedAtBooks,
   }),
 }));
 
@@ -93,6 +95,7 @@ import { useBooksSync } from '@/app/library/hooks/useBooksSync';
 describe('useBooksSync remote book refresh', () => {
   beforeEach(() => {
     vi.spyOn(Date, 'now').mockReturnValue(900);
+    h.lastSyncedAtBooks = 1;
     h.libraryState.library = [
       h.book({
         title: 'Local Absinthe',
@@ -161,5 +164,63 @@ describe('useBooksSync remote book refresh', () => {
     expect(refreshedBook.coverDownloadedAt).toBe(902);
     expect(refreshedBook.coverImageUrl).toBe('remote-cover');
     expect(refreshedBook.syncedAt).toBe(900);
+  });
+
+  test('periodically pulls cloud book changes while the library is open', async () => {
+    h.lastSyncedAtBooks = 800;
+    h.libraryState.library = [
+      h.book({
+        updatedAt: 500,
+        metaHash: 'meta-old',
+        uploadedAt: 200,
+        downloadedAt: 300,
+      }),
+    ];
+    h.syncedBooks = [];
+    const setIntervalSpy = vi
+      .spyOn(globalThis, 'setInterval')
+      .mockImplementation(() => 123 as unknown as ReturnType<typeof setInterval>);
+    vi.spyOn(globalThis, 'clearInterval').mockImplementation(() => undefined);
+
+    renderHook(() => useBooksSync());
+
+    await waitFor(() => {
+      expect(h.syncBooks).toHaveBeenCalledWith([], 'pull', undefined);
+    });
+    h.syncBooks.mockClear();
+
+    expect(setIntervalSpy).toHaveBeenCalledWith(
+      expect.any(Function),
+      SYNC_BOOKS_INTERVAL_SEC * 1000,
+    );
+    const intervalCallback = setIntervalSpy.mock.calls[0]?.[0] as () => void;
+    intervalCallback();
+
+    await waitFor(() => {
+      expect(h.syncBooks).toHaveBeenCalledWith([], 'pull', undefined);
+    });
+  });
+
+  test('pulls cloud book changes when the app returns online or foreground', async () => {
+    h.lastSyncedAtBooks = 800;
+    h.syncedBooks = [];
+
+    renderHook(() => useBooksSync());
+
+    await waitFor(() => {
+      expect(h.syncBooks).toHaveBeenCalledWith([], 'pull', undefined);
+    });
+    h.syncBooks.mockClear();
+
+    window.dispatchEvent(new Event('online'));
+    await waitFor(() => {
+      expect(h.syncBooks).toHaveBeenCalledWith([], 'pull', undefined);
+    });
+
+    h.syncBooks.mockClear();
+    window.dispatchEvent(new Event('focus'));
+    await waitFor(() => {
+      expect(h.syncBooks).toHaveBeenCalledWith([], 'pull', undefined);
+    });
   });
 });
