@@ -39,6 +39,7 @@ Review automation
   -> maps annotations to source passages
   -> uses Gemini to summarize review issues
   -> opens GitHub issues in source repos
+  -> writes source-edit proposal artifacts for accepted review
   -> accepted edits update source, then EPUBs rebuild
 ```
 
@@ -181,6 +182,14 @@ CastaliaInstitute/scriptorium/.github/workflows/readest-comments-to-issues.yml@m
 
 It downloads Readest sync JSON, maps annotations to source passages, summarizes
 with Gemini, and creates GitHub issues.
+
+The same mapped annotation records can feed
+`propose_readest_source_edits.py`, which creates reviewable proposal artifacts
+under `.atelier/readest-edit-proposals`. Those artifacts may contain a Gemini
+unified diff when credentials are available, or a manual-review prompt and
+source context when AI proposal generation is disabled. The proposal step does
+not apply patches automatically; it is the bridge between marginalia review and
+a later source PR.
 
 ## Security
 

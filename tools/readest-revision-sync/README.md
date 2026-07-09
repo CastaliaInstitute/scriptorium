@@ -120,10 +120,28 @@ links, La Recherche paths, Twenty Dollar Words paths, and ordinary URLs. Issue
 bodies and review packets render those references under
 `Footnote/Endnote Cross-References` or `Cross-References`.
 
+### Source Edit Proposals
+
+After annotation ingest, generate reviewable source-edit proposal artifacts from
+the mapped records:
+
+```sh
+python3 scripts/propose_readest_source_edits.py \
+  --input output/readest/readest-annotations.mapped.jsonl \
+  --workspace-root .. \
+  --out-dir .atelier/readest-edit-proposals
+```
+
+With `GEMINI_API_KEY`, the script asks Gemini for a conservative unified diff.
+Without a key, or with `--no-ai`, it writes the exact source context and prompt
+as a manual-review proposal. The script never applies patches directly; accepted
+edits still need a reviewed source change and a rebuilt EPUB.
+
 ## Optional Variables
 
 ```text
 GEMINI_READEST_ISSUE_MODEL
+GEMINI_READEST_EDIT_MODEL
 ```
 
 Defaults to `gemini-3.5-flash`.
@@ -134,6 +152,7 @@ Defaults to `gemini-3.5-flash`.
 python3 -m py_compile scripts/*.py
 python3 scripts/sync_epubs_to_webdav.py --dry-run --flatten --mirror "output/epub/*.epub"
 python3 scripts/create_readest_review_issues.py --input /tmp/readest-ingest-output-2/readest-annotations.mapped.jsonl --dry-run --limit 1
+python3 scripts/propose_readest_source_edits.py --input output/readest/readest-annotations.mapped.jsonl --no-ai
 ```
 
 ## Boundary

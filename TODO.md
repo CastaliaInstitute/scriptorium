@@ -112,7 +112,8 @@ OPDS and Supabase-backed WebDAV.
   EPUB annotation editor, Markdown-backed editor, or Codex document editor.
 - [ ] Define Codex document model.
 - [ ] Map Codex passages to repo source files.
-- [ ] Generate patch proposals from accepted annotations.
+- [x] Generate patch proposal artifacts from mapped annotations.
+- [ ] Gate patch proposals on accepted review annotations or issue state.
 - [ ] Open GitHub PRs from accepted review issues.
 - [ ] Rebuild EPUBs after accepted edits.
 - [ ] Resync updated EPUBs and verify Readest auto-refresh.
