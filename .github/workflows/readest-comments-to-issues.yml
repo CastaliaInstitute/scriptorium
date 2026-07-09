@@ -1,0 +1,129 @@
+name: Readest Comments to Issues
+
+on:
+  workflow_call:
+    inputs:
+      readest_remote_root:
+        description: "Remote WebDAV root to scan for Readest exports"
+        required: false
+        type: string
+        default: ""
+      source_map:
+        description: "JSONL source map in the caller repository"
+        required: false
+        type: string
+        default: "output/rag/rag-ingest-manifest.jsonl"
+      work_slug:
+        description: "Optional canonical work slug filter"
+        required: false
+        type: string
+        default: ""
+      issue_limit:
+        description: "Maximum issues to create per run"
+        required: false
+        type: number
+        default: 20
+      dry_run:
+        description: "Print issue payloads without creating GitHub issues"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      READEST_WEBDAV_URL:
+        required: true
+      READEST_WEBDAV_USERNAME:
+        required: true
+      READEST_WEBDAV_PASSWORD:
+        required: true
+      GEMINI_API_KEY:
+        required: false
+  workflow_dispatch:
+    inputs:
+      readest_remote_root:
+        description: "Remote WebDAV root to scan for Readest exports"
+        required: false
+        default: ""
+      source_map:
+        description: "JSONL source map"
+        required: false
+        default: "output/rag/rag-ingest-manifest.jsonl"
+      work_slug:
+        description: "Optional canonical work slug filter"
+        required: false
+        default: ""
+      issue_limit:
+        description: "Maximum issues to create"
+        required: false
+        default: "20"
+      dry_run:
+        description: "Print issue payloads without creating GitHub issues"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  issues:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+        with:
+          path: caller
+
+      - name: Checkout Scriptorium automation
+        uses: actions/checkout@v4
+        with:
+          repository: CastaliaInstitute/scriptorium
+          ref: main
+          path: scriptorium
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download Readest annotation exports
+        env:
+          WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
+          WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
+          WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}
+        run: |
+          set -euo pipefail
+          cd caller
+          python3 ../scriptorium/tools/readest-revision-sync/scripts/download_readest_webdav_json.py \
+            --remote-root "${{ inputs.readest_remote_root }}" \
+            --out-dir output/readest/webdav
+
+      - name: Map annotations to source context
+        run: |
+          set -euo pipefail
+          cd caller
+          work_slug_args=()
+          if [ -n "${{ inputs.work_slug }}" ]; then
+            work_slug_args+=(--work-slug "${{ inputs.work_slug }}")
+          fi
+          python3 ../scriptorium/tools/readest-revision-sync/scripts/ingest_readest_annotations.py \
+            output/readest/webdav \
+            --source-map "${{ inputs.source_map }}" \
+            --out-dir output/readest \
+            --packet-dir .atelier/readest-review \
+            "${work_slug_args[@]}"
+
+      - name: Create GitHub issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_READEST_ISSUE_MODEL || 'gemini-3.5-flash' }}
+          READEST_ISSUE_LIMIT: ${{ inputs.issue_limit }}
+        working-directory: caller
+        run: |
+          set -euo pipefail
+          dry_run=()
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            dry_run+=(--dry-run)
+          fi
+          python3 ../scriptorium/tools/readest-revision-sync/scripts/create_readest_review_issues.py "${dry_run[@]}"

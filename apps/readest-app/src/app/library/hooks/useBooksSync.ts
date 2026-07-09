@@ -9,6 +9,7 @@ import { SYNC_BOOKS_INTERVAL_SEC } from '@/services/constants';
 import { throttle } from '@/utils/throttle';
 import { debounce } from '@/utils/debounce';
 import { eventDispatcher } from '@/utils/event';
+import { findBooksNeedingFileRefresh, refreshSyncedBookFiles } from '../sync/bookFileRefresh';
 
 export const useBooksSync = () => {
   const _ = useTranslation();
@@ -118,6 +119,8 @@ export const useBooksSync = () => {
     const oldBooksNeedsDownload = oldBooks.filter((book) => {
       return !book.deletedAt && book.uploadedAt && !book.coverDownloadedAt;
     });
+    const oldBooksNeedingFileRefresh = findBooksNeedingFileRefresh(oldBooks, syncedBooks);
+    let refreshedBookHashes = new Set<string>();
 
     const processOldBook = async (oldBook: Book) => {
       const matchingBook = syncedBooks.find((newBook) => newBook.hash === oldBook.hash);
@@ -129,6 +132,12 @@ export const useBooksSync = () => {
           matchingBook.updatedAt >= oldBook.updatedAt
             ? { ...oldBook, ...matchingBook, syncedAt: Date.now() }
             : { ...matchingBook, ...oldBook, syncedAt: Date.now() };
+        if (refreshedBookHashes.has(matchingBook.hash)) {
+          mergedBook.downloadedAt = matchingBook.downloadedAt ?? Date.now();
+          mergedBook.coverDownloadedAt =
+            matchingBook.coverDownloadedAt ?? mergedBook.coverDownloadedAt;
+          mergedBook.coverImageUrl = matchingBook.coverImageUrl ?? mergedBook.coverImageUrl;
+        }
         return mergedBook;
       }
       return oldBook;
@@ -138,6 +147,23 @@ export const useBooksSync = () => {
     for (let i = 0; i < oldBooksNeedsDownload.length; i += oldBooksBatchSize) {
       const batch = oldBooksNeedsDownload.slice(i, i + oldBooksBatchSize);
       await appService?.downloadBookCovers(batch);
+    }
+
+    if (oldBooksNeedingFileRefresh.length > 0) {
+      setIsSyncing(true);
+    }
+    try {
+      refreshedBookHashes = await refreshSyncedBookFiles(
+        appService,
+        oldBooksNeedingFileRefresh,
+        setSyncProgress,
+      );
+    } catch (err) {
+      console.error('Error refreshing synced book file:', err);
+    } finally {
+      if (oldBooksNeedingFileRefresh.length > 0) {
+        setIsSyncing(false);
+      }
     }
 
     const updatedLibrary = await Promise.all(liveLibrary.map(processOldBook));

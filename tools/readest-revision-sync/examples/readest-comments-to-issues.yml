@@ -1,0 +1,23 @@
+name: Readest Comments to Issues
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 10 * * *"
+
+jobs:
+  issues:
+    uses: CastaliaInstitute/scriptorium/.github/workflows/readest-comments-to-issues.yml@main
+    permissions:
+      contents: read
+      issues: write
+    with:
+      readest_remote_root: ""
+      source_map: "output/rag/rag-ingest-manifest.jsonl"
+      issue_limit: 20
+      dry_run: false
+    secrets:
+      READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
+      READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}
+      READEST_WEBDAV_PASSWORD: ${{ secrets.READEST_WEBDAV_PASSWORD }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
