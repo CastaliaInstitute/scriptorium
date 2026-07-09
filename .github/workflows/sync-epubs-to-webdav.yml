@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: "output/epub/*.epub"
+      epub_build_command:
+        description: "Optional shell command, run in the caller repository, that builds EPUB artifacts before sync"
+        required: false
+        type: string
+        default: ""
       remote_prefix:
         description: "Remote WebDAV prefix"
         required: false
@@ -46,6 +51,10 @@ on:
         description: "Space-separated EPUB globs"
         required: false
         default: "output/epub/*.epub"
+      epub_build_command:
+        description: "Optional shell command, run in the caller repository, that builds EPUB artifacts before sync"
+        required: false
+        default: ""
       remote_prefix:
         description: "Remote WebDAV prefix"
         required: false
@@ -94,6 +103,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Build EPUB artifacts
+        if: ${{ inputs.epub_build_command != '' }}
+        working-directory: caller
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ${{ inputs.epub_build_command }}
 
       - name: Sync EPUBs
         env:

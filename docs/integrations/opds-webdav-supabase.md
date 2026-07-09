@@ -64,6 +64,11 @@ READEST_WEBDAV_USERNAME
 READEST_WEBDAV_PASSWORD
 ```
 
+If the caller repository stores source text but not derived EPUBs, pass
+`epub_build_command` to the reusable workflow. Scriptorium checks out the caller
+repository, runs that command from the caller root, and then uploads the EPUBs
+matched by `epub_globs`.
+
 Current caller prefixes:
 
 - Bibliotech publishes to `Bibliotech`.
