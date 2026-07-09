@@ -53,6 +53,8 @@ export const mergeSyncedBookAfterRefresh = (
       : { ...remoteBook, ...oldBook, syncedAt };
 
   if (refreshedBookHashes.has(remoteBook.hash)) {
+    mergedBook.uploadedAt = remoteBook.uploadedAt ?? mergedBook.uploadedAt;
+    mergedBook.metaHash = remoteBook.metaHash ?? mergedBook.metaHash;
     mergedBook.downloadedAt = remoteBook.downloadedAt ?? syncedAt;
     mergedBook.coverDownloadedAt = remoteBook.coverDownloadedAt ?? mergedBook.coverDownloadedAt;
     mergedBook.coverImageUrl = remoteBook.coverImageUrl ?? mergedBook.coverImageUrl;
