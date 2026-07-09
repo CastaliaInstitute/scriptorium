@@ -126,3 +126,7 @@ publishing reader builds or changing shared sync infrastructure.
 
 Use [Scriptorium Local Dev Setup](../operations/local-dev-setup.md) for local
 Readest, WebDAV, and revision-tool verification.
+
+Use [Public And Private Artifact Policy](../operations/public-private-policy.md)
+to decide which EPUBs, source maps, annotations, and review artifacts may leave
+the private sync bucket.

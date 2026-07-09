@@ -217,6 +217,11 @@ Required principles:
 - Bibliotech public-domain and private collections must be separated by policy,
   path, and bucket where needed.
 
+The operational policy is defined in
+[Public And Private Artifact Policy](operations/public-private-policy.md). The
+current `readest` Supabase bucket is authenticated private sync infrastructure;
+public distribution requires explicit promotion to a separate public surface.
+
 ## Milestones
 
 1. Centralize shared automation in Scriptorium.
@@ -237,8 +242,6 @@ Required principles:
 
 ## Open Questions
 
-- Which Supabase bucket is authoritative for public Bibliotech EPUBs versus
-  private review EPUBs?
 - Should annotation issues be created in source repos directly, or aggregated in
   Scriptorium first and dispatched later?
 - What is the first manuscript editing surface: inline EPUB annotation editing,
