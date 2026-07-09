@@ -12,6 +12,11 @@ jobs:
       flatten: true
       mirror: false
       dry_run: false
+      run_smoke: true
+      smoke_expected_folders: |
+        La Recherche
+      smoke_required_opds_entries: |
+        Absinthe
     secrets:
       READEST_WEBDAV_URL: ${{ secrets.READEST_WEBDAV_URL }}
       READEST_WEBDAV_USERNAME: ${{ secrets.READEST_WEBDAV_USERNAME }}

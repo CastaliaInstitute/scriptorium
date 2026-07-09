@@ -169,6 +169,11 @@ Required inputs per caller:
 - `remote_prefix`: top-level remote folder, such as `La Recherche`.
 - `flatten`: whether all EPUBs are uploaded directly under `remote_prefix`.
 - `mirror`: whether stale remote EPUBs under the prefix are deleted.
+- `run_smoke`: whether to verify WebDAV and OPDS after a live sync.
+- `smoke_expected_folders`: newline-separated top-level folders that must be
+  visible from `PROPFIND /`.
+- `smoke_required_opds_entries`: newline-separated title or href substrings
+  that must appear in `/opds`.
 
 Run dry first, then live:
 
@@ -187,6 +192,10 @@ gh workflow run sync-scriptorium-webdav.yml \
 
 Use `mirror=true` only when the local EPUB output is complete and authoritative
 for that remote prefix.
+
+The sync workflow skips smoke verification during dry runs. On live runs,
+enable `run_smoke` so caller workflows fail early if an uploaded series folder
+or OPDS entry is not visible to Readest.
 
 ## Reauth Recovery
 
