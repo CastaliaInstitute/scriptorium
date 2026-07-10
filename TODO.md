@@ -37,7 +37,8 @@ OPDS and Supabase-backed WebDAV.
 - [ ] Deploy Cloud Run WebDAV from Scriptorium workflow.
 - [ ] Replace placeholder or mismatched `READEST_WEBDAV_URL`,
   `READEST_WEBDAV_USERNAME`, and `READEST_WEBDAV_PASSWORD` secrets in
-  Scriptorium, Bibliotech, and AtelierNymphet after deployment verification.
+  Scriptorium, Bibliotech, and AtelierNymphet after deployment verification
+  using `tools/readest-webdav-cloudrun/scripts/sync_github_webdav_secrets.sh`.
 - [ ] Confirm `/healthz`, WebDAV `PROPFIND /`, and `GET /opds` on deployed service.
 
 ## Phase 2: Readest Fork Sync Behavior

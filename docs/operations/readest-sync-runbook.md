@@ -45,6 +45,16 @@ repo secrets in every publishing repo.
 Do not print secret values in logs or chat output. Pipe them directly from the
 secret manager to `gh secret set` when possible.
 
+After the deployed endpoint is verified, update all Scriptorium WebDAV
+publishers from one place:
+
+```sh
+READEST_WEBDAV_URL="$READEST_WEBDAV_URL" \
+READEST_WEBDAV_USERNAME="$READEST_WEBDAV_USERNAME" \
+READEST_WEBDAV_PASSWORD="$READEST_WEBDAV_PASSWORD" \
+tools/readest-webdav-cloudrun/scripts/sync_github_webdav_secrets.sh
+```
+
 ## Expected Remote Layout
 
 The root WebDAV folder should expose:

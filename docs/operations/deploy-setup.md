@@ -90,6 +90,18 @@ READEST_WEBDAV_USERNAME
 READEST_WEBDAV_PASSWORD
 ```
 
+After the Cloud Run URL and `readest-webdav-password` have been verified, sync
+the same credentials to Scriptorium and the caller repositories:
+
+```sh
+READEST_WEBDAV_URL="$READEST_WEBDAV_URL" \
+READEST_WEBDAV_USERNAME="$READEST_WEBDAV_USERNAME" \
+READEST_WEBDAV_PASSWORD="$READEST_WEBDAV_PASSWORD" \
+tools/readest-webdav-cloudrun/scripts/sync_github_webdav_secrets.sh
+```
+
+Override `REPOS` with a space-separated repository list for a staged rollout.
+
 If a caller's `epub_build_command` clones sibling private repositories before
 sync, also configure:
 
