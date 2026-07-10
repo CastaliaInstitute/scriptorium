@@ -106,7 +106,21 @@ SOURCE_REPO_TOKEN
 
 ## Deploy Cloud Run
 
-Run the Scriptorium workflow:
+After IAM and Secret Manager setup, run the workflow in preflight-only mode
+first. This verifies project access, required APIs, required secrets, latest
+secret-version access, and Cloud Run list access without deploying:
+
+```sh
+gh workflow run deploy-webdav-cloudrun.yml \
+  --repo CastaliaInstitute/scriptorium \
+  --ref main \
+  -f service_name=readest-webdav \
+  -f project_id=institute-481516 \
+  -f region=us-west1 \
+  -f preflight_only=true
+```
+
+Then run the live deploy:
 
 ```sh
 gh workflow run deploy-webdav-cloudrun.yml \
@@ -117,6 +131,7 @@ gh workflow run deploy-webdav-cloudrun.yml \
   -f region=us-west1 \
   -f storage_backend=supabase \
   -f storage_bucket=readest \
+  -f preflight_only=false \
   -f webdav_root_prefix= \
   -f webdav_hide_legacy_root_folder=true \
   -f run_smoke=true
@@ -141,6 +156,8 @@ Optional layout inputs:
 
 - `project_id`: target Google Cloud project. Leave blank to use the project
   embedded in `GCP_SERVICE_ACCOUNT_JSON`.
+- `preflight_only`: run only the GCP prerequisite checks and stop before
+  deploying Cloud Run.
 - `webdav_root_prefix`: storage prefix exposed as the WebDAV root.
 - `webdav_hide_legacy_root_folder`: hides the old top-level `Readest/` folder
   while migrating to root-level series folders.
