@@ -118,25 +118,25 @@ jobs:
 
     steps:
       - name: Checkout caller repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: caller
 
       - name: Checkout Scriptorium automation
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: CastaliaInstitute/scriptorium
           ref: main
           path: scriptorium
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Set up Node
         if: ${{ inputs.run_smoke && inputs.dry_run == false }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
 
