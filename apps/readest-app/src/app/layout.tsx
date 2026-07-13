@@ -8,7 +8,7 @@ import Providers from '@/components/Providers';
 import '../styles/globals.css';
 
 const pagesBasePath = process.env['GITHUB_PAGES_BASE_PATH'] ?? '';
-const url = 'https://castaliainstitute.github.io/scriptorium/';
+const url = 'https://scriptorium.castalia.institute/';
 const title = 'Castalia Scriptorium';
 const description =
   'Castalia Scriptorium is a bookmaking environment for reading, annotation, review, and publication.';
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
   },
   other: {
     'apple-mobile-web-app-capable': 'yes',
-    'twitter:domain': 'castaliainstitute.github.io',
+    'twitter:domain': 'scriptorium.castalia.institute',
     'twitter:url': url,
   },
 };
