@@ -10,7 +10,7 @@
     "dev-web": "dotenv -e .env.web -- next dev",
     "build-web": "dotenv -e .env.web -- next build",
     "build-pages-static": "NODE_OPTIONS=--max-old-space-size=8192 dotenv -e .env.pages-static -- next build --webpack",
-    "build-github-pages": "GITHUB_PAGES_BASE_PATH=/scriptorium pnpm build-pages-static",
+    "build-github-pages": "pnpm build-pages-static",
     "deploy-pages-static": "pnpm build-pages-static && wrangler pages deploy out --project-name castalia-scriptorium --branch main",
     "start-web": "dotenv -e .env.web -- next start",
     "dev-web:vinext": "dotenv -e .env.web -- vinext dev",
