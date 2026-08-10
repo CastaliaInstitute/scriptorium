@@ -110,19 +110,19 @@ jobs:
 
     steps:
       - name: Checkout caller repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: caller
 
       - name: Checkout Scriptorium automation
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: CastaliaInstitute/scriptorium
           ref: main
           path: scriptorium
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -193,7 +193,7 @@ jobs:
             --out-dir .atelier/readest-cross-reference-notes
 
       - name: Upload cross-reference endnotes
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: readest-cross-reference-endnotes
           path: caller/.atelier/readest-cross-reference-notes
@@ -201,7 +201,7 @@ jobs:
 
       - name: Upload source edit proposals
         if: ${{ inputs.generate_edit_proposals }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: readest-edit-proposals
           path: caller/.atelier/readest-edit-proposals
